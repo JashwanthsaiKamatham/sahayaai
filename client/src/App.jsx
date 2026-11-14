@@ -4,6 +4,7 @@ import {Sprout,Volume2,Type,User,LogOut,X,CheckCircle2,ShieldCheck,PhoneCall} fr
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import LoginPage from './components/LoginPage.jsx'
+import TiltCard from './components/TiltCard.jsx'
 import {schemesFor} from './data/schemes.js'
 const API=import.meta.env.VITE_API_BASE_URL||'https://sahayaai-backend.onrender.com'
 const LANGS={en:{label:'English',speech:'en-IN',name:'English'},hi:{label:'हिंदी',speech:'hi-IN',name:'Hindi'},kn:{label:'ಕನ್ನಡ',speech:'kn-IN',name:'Kannada'},te:{label:'తెలుగు',speech:'te-IN',name:'Telugu'},ta:{label:'தமிழ்',speech:'ta-IN',name:'Tamil'},mr:{label:'मराठी',speech:'mr-IN',name:'Marathi'}}
@@ -20,7 +21,7 @@ export default function App(){
  const [lang,setLang]=useState(localStorage.getItem('sahaya_lang')||'en');const t=T[lang]||T.en
  const [large,setLarge]=useState(false)
  const [state,setState]=useState('');const [district,setDistrict]=useState('');const [cat,setCat]=useState('all')
- const [selected,setSelected]=useState(null)
+ const [selected,setSelected]=useState(null);const [applyScheme,setApplyScheme]=useState(null)
  const [token,setToken]=useState(localStorage.getItem('sahaya_token')||'');const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_user'))}catch{return null}})
  const [view,setView]=useState(()=>localStorage.getItem('sahaya_token')?'dashboard':'login');
  const [authForm,setAuthForm]=useState({full_name:'',email:'',password:''});const [isSignup,setIsSignup]=useState(false);const [msg,setMsg]=useState('');const [items,setItems]=useState([]);const [ai,setAi]=useState(null);const [busy,setBusy]=useState(false)
@@ -69,14 +70,18 @@ export default function App(){
      <p className="text-emerald-50 text-lg sm:text-xl mt-3 max-w-xl">Big buttons. Simple words. No agent. No fees. Tap, listen, and find money & support for your family.</p>
      <div className="flex flex-wrap gap-3 mt-6"><a href="#finder" className="min-h-[56px] px-6 rounded-full font-extrabold text-lg inline-flex items-center bg-white text-emerald-950 shadow-xl active:scale-95 transition">🔎 Find My Schemes</a><button onClick={demo} className="min-h-[56px] px-6 rounded-full font-extrabold text-lg inline-flex items-center gap-2 border-2 border-white/50 bg-white/10 active:scale-95 transition">🌾 Try Demo (1 tap)</button></div>
      <p className="mt-4 font-semibold text-emerald-100 inline-flex items-center gap-2"><PhoneCall size={20}/> Helpline style help — tap the orange mic button anytime</p></div>
-     <img src="/images/woman-phone.jpg" alt="Indian woman happily speaking on a phone in a green field" className="hidden md:block rounded-[1.6rem] h-64 w-full object-cover border-4 border-white/25 shadow-2xl" onError={e=>e.currentTarget.src='/images/farmer.jpg'}/>
+     <div className="hidden md:block relative" style={{perspective:1000}}>
+      <motion.div aria-hidden animate={{y:[0,-12,0],rotate:[0,5,0]}} transition={{duration:6,repeat:Infinity}} className="absolute -top-5 -left-4 z-10 w-20 h-20 rounded-[1.4rem] grid place-items-center bg-white/15 border border-white/40 backdrop-blur-xl shadow-2xl"><Sprout size={38} color="#A7F3D0"/></motion.div>
+      <TiltCard className="rounded-[1.6rem] shadow-2xl"><img src="/images/woman-phone.jpg" alt="Indian woman happily speaking on a phone in a green field" className="rounded-[1.6rem] h-64 w-full object-cover border-4 border-white/25" onError={e=>e.currentTarget.src='/images/farmer.jpg'}/></TiltCard>
+      <motion.div aria-hidden animate={{y:[0,9,0]}} transition={{duration:5,repeat:Infinity}} className="absolute -bottom-4 right-4 bg-white/90 backdrop-blur-xl rounded-2xl px-4 py-3 shadow-2xl text-emerald-950 font-extrabold">🛡️ 96% Match • PM-KISAN</motion.div>
+     </div>
     </div>
    </div>
   </section>
 
   {msg&&<div className="max-w-7xl mx-auto px-4"><p role="status" className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 font-bold mb-4">{msg}</p></div>}
 
-  <SchemeFinder state={state} setState={setState} district={district} setDistrict={setDistrict} cat={cat} setCat={setCat} schemes={shown} onCheck={setSelected} onListen={listenScheme} onSave={saveScheme} t={t}/>
+  <SchemeFinder state={state} setState={setState} district={district} setDistrict={setDistrict} cat={cat} setCat={setCat} schemes={shown} allSchemes={all} onCheck={setSelected} onListen={listenScheme} onSave={saveScheme} onApply={setApplyScheme} t={t}/>
 
   {/* AI RESULT + ACCOUNT + SAVED */}
   <main className="max-w-7xl mx-auto px-4 pb-24">
@@ -108,10 +113,17 @@ export default function App(){
     <h4 className="font-extrabold text-xl mt-5">✅ You may be eligible if:</h4><ul className="space-y-2 mt-2 text-lg">{selected.points.map(p=><li key={p} className="flex gap-2"><CheckCircle2 className="text-emerald-700 shrink-0 mt-1"/>{p}</li>)}</ul>
     <h4 className="font-extrabold text-xl mt-5">🧾 Carry these documents:</h4><div className="flex flex-wrap gap-2 mt-2">{selected.docs.map(d=><span key={d} className="bg-amber-50 border border-amber-200 rounded-full px-3 py-2 font-semibold">{d}</span>)}</div>
     <p className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 font-semibold mt-4 inline-flex gap-2"><ShieldCheck className="shrink-0 text-emerald-800"/> Registration is FREE. Take originals + 2 copies to Grama One / CSC.</p>
-    <div className="grid grid-cols-2 gap-2 mt-4"><button onClick={()=>askAI(selected)} className="min-h-[56px] rounded-2xl text-white font-extrabold" style={{background:'#14532D'}}>🤖 Ask AI</button><a href={selected.apply} target="_blank" rel="noreferrer" className="min-h-[56px] rounded-2xl font-extrabold border-2 inline-flex justify-center items-center" style={{borderColor:'#C05621',color:'#9C4221'}}>{t.apply} ↗</a></div>
+    <div className="grid grid-cols-2 gap-2 mt-4"><button onClick={()=>askAI(selected)} className="min-h-[56px] rounded-2xl text-white font-extrabold" style={{background:'#14532D'}}>🤖 Ask AI</button><button onClick={()=>{setApplyScheme(selected);setSelected(null)}} className="min-h-[56px] rounded-2xl font-extrabold border-2 inline-flex justify-center items-center" style={{borderColor:'#C05621',color:'#9C4221'}}>{t.apply} ↗</button></div>
     <button onClick={()=>listenScheme(selected)} className="min-h-[56px] w-full rounded-2xl bg-amber-100 font-extrabold mt-2 inline-flex justify-center items-center gap-2"><Volume2/> {t.listen}</button>
    </motion.div></motion.div>}</AnimatePresence>
 
+  <AnimatePresence>{applyScheme&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-50 bg-black/55 grid place-items-end sm:place-items-center p-3" role="dialog" aria-modal="true" aria-label="Apply confirmation">
+   <motion.div initial={{y:60}} animate={{y:0}} exit={{y:60}} className="bg-white rounded-[2rem] p-6 w-full max-w-md shadow-2xl text-center">
+    <div className="text-5xl">🌾</div><h3 className="font-extrabold text-2xl mt-2">Apply for {applyScheme.name}?</h3>
+    <p className="text-lg text-stone-600 mt-2">You will go to the <b>official government website</b>. Registration is <b>FREE</b> — never pay anyone. Carry: {applyScheme.docs.join(', ')}.</p>
+    <a href={applyScheme.apply} target="_blank" rel="noreferrer" onClick={()=>setApplyScheme(null)} className="min-h-[60px] w-full rounded-2xl text-white font-extrabold text-lg inline-flex justify-center items-center mt-4 shadow" style={{background:'#15803d'}}>Yes, Go to Official Website ↗</a>
+    <button onClick={()=>setApplyScheme(null)} className="min-h-[56px] w-full rounded-2xl border-2 font-extrabold text-lg mt-2">Not Now, Go Back</button>
+   </motion.div></motion.div>}</AnimatePresence>
   <VoiceAssist langSpeech={LANGS[lang].speech} onTranscript={onVoice} t={t}/>
  </div></MotionConfig>
 }
