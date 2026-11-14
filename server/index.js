@@ -54,6 +54,16 @@ app.post('/api/auth/login',async(req,res)=>{
  const token=jwt.sign({id:user.id,email:em},process.env.JWT_SECRET,{expiresIn:'7d'}); res.json({token,user:publicUser(user)}); }catch(e){res.status(500).json({error:e.message})}
 });
 app.get('/api/auth/me',auth,(req,res)=>res.json({user:req.user}));
+const memProfiles=new Map();
+app.get('/api/profile',auth,async(req,res)=>{
+ if(supabase){ const {data,error}=await supabase.from('profiles').select('id,email,full_name,state,district,preferred_language,age_group,occupation,income_range,is_farmer,landholding,created_at').eq('id',req.user.id).maybeSingle(); if(error) return res.status(500).json({error:error.message}); return res.json(data||{}); }
+ res.json(memProfiles.get(req.user.id)||{occupation:'Small Farmer'});
+});
+app.put('/api/profile',auth,async(req,res)=>{
+ const f=['state','district','preferred_language','age_group','occupation','income_range','is_farmer','landholding']; const upd={}; f.forEach(k=>{if(req.body&&k in req.body) upd[k]=req.body[k]});
+ if(supabase){ const {data,error}=await supabase.from('profiles').update(upd).eq('id',req.user.id).select('id,email,full_name,state,district,preferred_language,age_group,occupation,income_range,is_farmer,landholding,created_at').single(); if(error) return res.status(500).json({error:error.message}); return res.json(data); }
+ const cur={...(memProfiles.get(req.user.id)||{}),...upd,id:req.user.id}; memProfiles.set(req.user.id,cur); res.json(cur);
+});
 
 app.get('/api/items',auth,async(req,res)=>{
  if(supabase){ const {data,error}=await supabase.from('items').select('*').eq('user_id',req.user.id).order('created_at',{ascending:false}); if(error) return res.status(500).json({error:error.message}); return res.json(data||[]); }
