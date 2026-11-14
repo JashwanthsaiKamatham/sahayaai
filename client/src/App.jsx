@@ -2,6 +2,7 @@ import {useEffect,useMemo,useState,lazy,Suspense} from 'react'
 import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House,Baby,Accessibility,Map as MapIcon,Mic,ChevronDown,LayoutGrid} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
+import ThemeBackdrop from './components/ThemeBackdrop.jsx'
 const GlobeHero=lazy(()=>import('./components/GlobeHero.jsx'))
 import TiltCard from './components/TiltCard.jsx'
 import GuideModal from './components/GuideModal.jsx'
@@ -117,13 +118,21 @@ export default function App(){
     <button onClick={signOut} className="min-h-[48px] rounded-2xl border-2 font-extrabold col-span-2 depth-sm bg-white" style={{borderColor:'#0B2447',color:'#0B2447'}}>{u.signOut}</button></div></nav>}
   </header>
 
-  <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 pb-28">
+  <main className="home-mesh max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 pb-28">
    {msg&&<p role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 font-semibold leading-relaxed break-words">{msg}<button onClick={()=>setMsg('')} className="float-right font-extrabold px-2" aria-label="Dismiss">✕</button></p>}
 
    {page==='home'&&<>
     {/* HERO */}
-    <section className="rounded-[2rem] overflow-hidden text-white shadow-xl" style={{background:'linear-gradient(120deg,#0B2447 0%,#123B63 48%,#064E3B 100%)'}}>
-     <div className="p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center max-w-[1280px] mx-auto w-full">
+    <section className="relative rounded-[2rem] overflow-hidden text-white shadow-xl" style={{background:'linear-gradient(120deg,#060B19 0%,#0B2447 45%,#064E3B 100%)'}}>
+     {/* Luminous Neural Mesh backdrop: constellation canvas + isometric lattice + mandala */}
+     <div className="absolute inset-0 pointer-events-none" aria-hidden="true"><ThemeBackdrop density={0.8} opacity={0.8}/></div>
+     <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
+      <defs><pattern id="isoGridHome" width="56" height="32" patternUnits="userSpaceOnUse"><path d="M28 0L56 16L28 32L0 16Z" fill="none" stroke="rgba(59,130,246,.14)" strokeWidth="1"/></pattern></defs>
+      <rect width="100%" height="100%" fill="url(#isoGridHome)"/>
+      <g fill="none" stroke="rgba(59,130,246,.22)"><circle cx="86%" cy="22%" r="150"/><circle cx="86%" cy="22%" r="106"/><circle cx="86%" cy="22%" r="62"/><rect x="calc(86% - 106px)" y="calc(22% - 106px)" width="212" height="212"/></g>
+      <g><circle cx="86%" cy="22%" r="5" fill="#F59E0B"/><circle cx="8%" cy="82%" r="4" fill="#10B981"/></g>
+     </svg>
+     <div className="relative p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center max-w-[1280px] mx-auto w-full">
       <div className="flex flex-col gap-6 min-w-0">
       <span className="inline-flex w-fit items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm font-bold break-words"><ShieldCheck size={16} className="text-amber-300 shrink-0"/> {u.heroBadge}</span>
       <h1 className="font-extrabold tracking-tight leading-[1.08] break-words" style={{fontSize:'clamp(2.1rem,5.5vw,3.6rem)'}}>{u.heroA} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-amber-300">{u.heroB}</span></h1>
@@ -155,17 +164,17 @@ export default function App(){
 
     {/* HOW + WHY */}
     <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-     <div className="bg-white rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8"><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.howEyebrow}</p><ol className="flex flex-col gap-4 mt-4">{u.howSteps.map((s,i)=><li key={s[0]} className="flex gap-3.5"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#0B2447'}}>{i+1}</span><span><b className="block leading-snug">{s[0]}</b><span className="text-slate-500 leading-relaxed break-words">{s[1]}</span></span></li>)}</ol></div>
-     <div className="rounded-[1.75rem] p-6 sm:p-8 text-white shadow-lg" style={{background:'linear-gradient(140deg,#064E3B,#047857)'}}><p className="font-extrabold tracking-widest text-sm text-amber-300">{u.whyEyebrow}</p><ul className="flex flex-col gap-3.5 mt-4">{u.whyItems.map(x=><li key={x[0]} className="flex gap-3"><CheckCircle2 className="text-amber-300 shrink-0 mt-1"/><span><b className="block leading-snug">{x[0]}</b><span className="text-emerald-100/85 leading-relaxed break-words">{x[1]}</span></span></li>)}</ul></div>
+     <div className="bg-white rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8 theme-frame"><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.howEyebrow}</p><ol className="flex flex-col gap-4 mt-4">{u.howSteps.map((s,i)=><li key={s[0]} className="flex gap-3.5"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#0B2447'}}>{i+1}</span><span><b className="block leading-snug">{s[0]}</b><span className="text-slate-500 leading-relaxed break-words">{s[1]}</span></span></li>)}</ol></div>
+     <div className="rounded-[1.75rem] p-6 sm:p-8 text-white shadow-lg theme-frame" style={{background:'linear-gradient(140deg,#064E3B,#047857)'}}><p className="font-extrabold tracking-widest text-sm text-amber-300">{u.whyEyebrow}</p><ul className="flex flex-col gap-3.5 mt-4">{u.whyItems.map(x=><li key={x[0]} className="flex gap-3"><CheckCircle2 className="text-amber-300 shrink-0 mt-1"/><span><b className="block leading-snug">{x[0]}</b><span className="text-emerald-100/85 leading-relaxed break-words">{x[1]}</span></span></li>)}</ul></div>
     </section>
 
     {/* TESTIMONIALS — authentic only */}
-    <section className="bg-white rounded-[1.75rem] border border-dashed border-slate-300 p-6 sm:p-8 text-center"><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.storiesEyebrow}</p><h2 className="font-extrabold text-2xl tracking-tight mt-1.5">{u.storiesTitle}</h2><p className="text-slate-500 leading-relaxed max-w-xl mx-auto mt-2">{u.storiesText}</p></section>
+    <section className="bg-white rounded-[1.75rem] border border-dashed border-slate-300 p-6 sm:p-8 text-center theme-frame"><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.storiesEyebrow}</p><h2 className="font-extrabold text-2xl tracking-tight mt-1.5">{u.storiesTitle}</h2><p className="text-slate-500 leading-relaxed max-w-xl mx-auto mt-2">{u.storiesText}</p></section>
    </>}
 
    {page==='explore'&&<section className="flex flex-col gap-5">
     <div><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.expEyebrow}</p><h2 className="font-extrabold text-3xl sm:text-4xl tracking-tight mt-1">{u.expTitle}</h2><p className="text-slate-500 leading-relaxed mt-1">{u.expSub}</p></div>
-    <div className="bg-white/85 backdrop-blur-xl rounded-3xl border border-[#E2E8F0] shadow-sm p-5 flex flex-col gap-3">
+    <div className="bg-white/85 backdrop-blur-xl rounded-3xl border border-[#E2E8F0] shadow-sm p-5 flex flex-col gap-3 theme-frame">
      <div className="flex items-center gap-2 rounded-2xl border border-[#E2E8F0] px-4 bg-white"><Search className="text-slate-400 shrink-0"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search by scheme name or benefit…" aria-label="Search schemes" className="flex-1 min-w-0 min-h-[52px] outline-none text-[1.02rem]"/></div>
      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
       <select value={exState} onChange={e=>setExState(e.target.value)} aria-label="Filter by state" className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3 bg-white font-semibold"><option>All States</option>{Object.keys(STATE_DISTRICTS).map(s=><option key={s}>{s}</option>)}</select>
@@ -248,7 +257,7 @@ export default function App(){
  </div>
 }
 function MiniCard({s,onGuide,onSave,onListen,onShare,onCompare,compared,u}){const L=u||UI_T.en;
- return <article className="depth-card p-6 flex flex-col gap-3">
+ return <article className="depth-card theme-frame p-6 flex flex-col gap-3">
   <div className="flex flex-wrap justify-between gap-2"><span className="rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1.5 text-[.8rem] font-bold break-words">{s.origin}</span><span className="rounded-full px-3 py-1.5 text-sm font-extrabold text-white shrink-0" style={{background:(s.match||80)>=90?'#047857':'#D97706'}}>{s.match||'—'}% {L.match}</span></div>
   <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold text-sm"><ShieldCheck size={15}/>{L.verified}</span>
   <h3 className="font-extrabold text-[1.3rem] leading-snug break-words">{s.name}</h3>

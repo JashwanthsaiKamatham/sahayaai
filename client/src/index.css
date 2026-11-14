@@ -56,3 +56,12 @@ html{scroll-behavior:auto!important}
 .depth-btn{box-shadow:0 1px 2px rgba(15,23,42,.14),0 8px 18px rgba(6,78,59,.22),inset 0 1px 0 rgba(255,255,255,.25)}
 .voice-orb{box-shadow:0 0 0 6px rgba(217,119,6,.16),0 14px 30px rgba(194,65,12,.38),inset 0 2px 0 rgba(255,255,255,.35),inset 0 -6px 14px rgba(124,45,18,.35)}
 .nav-link{white-space:nowrap}
+
+/* ---- Digital Public Infrastructure & Luminous Neural Mesh theme ---- */
+.home-mesh{background-image:radial-gradient(640px 320px at 12% 0%,rgba(59,130,246,.07),transparent 60%),radial-gradient(720px 360px at 88% 26%,rgba(16,185,129,.05),transparent 60%),radial-gradient(560px 300px at 50% 100%,rgba(245,158,11,.05),transparent 60%),linear-gradient(rgba(59,130,246,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.05) 1px,transparent 1px);background-size:auto,auto,auto,46px 46px,46px 46px}
+.theme-frame{border:1px solid rgba(59,130,246,.20)!important;background-image:radial-gradient(circle 3.5px at 16px 16px,rgba(245,158,11,.85) 97%,transparent 100%),radial-gradient(circle 3.5px at calc(100% - 16px) 16px,rgba(16,185,129,.85) 97%,transparent 100%),radial-gradient(circle 3.5px at 16px calc(100% - 16px),rgba(59,130,246,.85) 97%,transparent 100%),radial-gradient(circle 3.5px at calc(100% - 16px) calc(100% - 16px),rgba(245,158,11,.85) 97%,transparent 100%);background-repeat:no-repeat}
+.glass-dark{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 60px rgba(2,6,17,.55),inset 0 1px 0 rgba(255,255,255,.20)}
+.midnight{background:radial-gradient(900px 500px at 85% -10%,rgba(59,130,246,.22),transparent 60%),radial-gradient(800px 480px at -10% 90%,rgba(16,185,129,.14),transparent 60%),radial-gradient(600px 320px at 50% 110%,rgba(245,158,11,.10),transparent 60%),linear-gradient(160deg,#060B19 0%,#0B1120 55%,#0A1F33 100%)}
+.glass-input{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.20)!important;color:#F1F5F9!important}
+.glass-input::placeholder{color:#94A3B8!important}
+.glass-input:focus{border-color:#10B981!important;box-shadow:0 0 0 4px rgba(16,185,129,.22)!important}
