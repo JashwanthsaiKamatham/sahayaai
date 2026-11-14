@@ -1,8 +1,9 @@
 export const CATEGORIES=[
- {id:'all',label:'All',icon:'LayoutGrid'},
- {id:'farming',label:'Farming & Agriculture',icon:'Sprout'},
- {id:'pension',label:'Senior Citizen Pensions',icon:'HeartHandshake'},
- {id:'housing',label:'Housing',icon:'Home'},
+ {id:'all',label:'All Schemes',icon:'LayoutGrid'},
+ {id:'farming',label:'Farming & Crops',icon:'Sprout'},
+ {id:'pension',label:'Senior Citizen Pension',icon:'HeartHandshake'},
+ {id:'housing',label:'Housing & Solar',icon:'Sun'},
+ {id:'healthcare',label:'Healthcare',icon:'HeartPulse'},
  {id:'women',label:'Women & Child Welfare',icon:'Baby'},
  {id:'wages',label:'Daily Wages',icon:'Hammer'},
 ]
@@ -17,15 +18,19 @@ export const STATE_DISTRICTS={
 const central=[
  {name:'PM-KISAN Samman Nidhi',cat:'farming',match:95,benefit:'₹6,000 / year',points:['₹2,000 every 4 months to bank','For land-holding farmer families','Free e-KYC at CSC'],apply:'https://pmkisan.gov.in',docs:['Aadhaar','Land records','Bank passbook']},
  {name:'PM Awas Yojana – Gramin',cat:'housing',match:88,benefit:'Up to ₹1.20 lakh',points:['Money to build pucca house','For homeless / kutcha-house families','Paid in instalments to bank'],apply:'https://pmayg.nic.in',docs:['Aadhaar','Job card / income proof','Bank account','House photo']},
+ {name:'PM Surya Ghar: Muft Bijli Yojana',cat:'housing',match:87,benefit:'₹78,000 subsidy + free power',points:['Rooftop solar subsidy up to 3 kW+','300 units free electricity / month (as notified)','Apply online, DISCOM installs'],apply:'https://pmsuryaghar.gov.in',docs:['Aadhaar','Electricity bill','Bank passbook','Roof photo']},
  {name:'Indira Gandhi National Old Age Pension',cat:'pension',match:90,benefit:'Monthly pension',points:['For BPL citizens aged 60+','₹200–₹500/month from Centre + state top-up','Direct to bank / post office'],apply:'https://nsap.nic.in',docs:['Aadhaar','Age proof','BPL ration card','Bank passbook']},
  {name:'e-Shram Card',cat:'wages',match:92,benefit:'₹2 lakh insurance',points:['Free registration for unorganised workers','Accident insurance up to ₹2 lakh','One card for many benefits'],apply:'https://eshram.gov.in',docs:['Aadhaar','Mobile linked to Aadhaar','Bank account']},
  {name:'PM Vishwakarma',cat:'wages',match:84,benefit:'Loan @5% + ₹15,000 toolkit',points:['For artisans & craftspeople','Training with daily stipend','Cheap loan up to ₹3 lakh'],apply:'https://pmvishwakarma.gov.in',docs:['Aadhaar','Ration card','Bank passbook']},
- {name:'Ayushman Bharat (PM-JAY)',cat:'pension',match:86,benefit:'₹5 lakh health cover / year',points:['Free hospital treatment for family','Cashless at listed hospitals','For eligible low-income families'],apply:'https://beneficiary.nha.gov.in',docs:['Aadhaar','Ration card','Mobile number']},
+ {name:'Ayushman Bharat (PM-JAY)',cat:'healthcare',match:86,benefit:'₹5 lakh health cover / year',points:['Free hospital treatment for family','Cashless at listed hospitals','For eligible low-income families'],apply:'https://beneficiary.nha.gov.in',docs:['Aadhaar','Ration card','Mobile number']},
 ]
 const byState={
  'Karnataka':[
   {name:'Sandhya Suraksha Yojane',cat:'pension',match:96,benefit:'₹1,200 / month pension',points:['For Karnataka residents aged 65+','Low annual income families','Apply at Grama One / Nadakacheri'],apply:'https://sevasindhu.karnataka.gov.in',docs:['Aadhaar','Age proof','Income certificate','Bank passbook']},
   {name:'Gruha Lakshmi',cat:'women',match:94,benefit:'₹2,000 / month',points:['To woman head of household','BPL / APL ration card holders','Direct bank transfer'],apply:'https://sevasindhu.karnataka.gov.in',docs:['Aadhaar','Ration card','Bank account in woman name']},
+  {name:'Krishi Bhagya',cat:'farming',match:89,benefit:'Farm pond & drip support',points:['For dry-land farmers in Karnataka','Farm pond, polyhouse & micro-irrigation help','Via Raitha Samparka Kendra'],apply:'https://raitamitra.karnataka.gov.in',docs:['Aadhaar','Land RTC','Bank passbook']},
+  {name:'Raitha Siri / Siri Dhanya Support',cat:'farming',match:84,benefit:'Millet farmer incentive',points:['Incentive for millet (siri dhanya) growers','Supports ragi, jowar & millets','As notified by Agriculture Dept.'],apply:'https://raitamitra.karnataka.gov.in',docs:['Aadhaar','Land RTC','Crop survey entry']},
+  {name:'Bhagyalakshmi Scheme',cat:'women',match:86,benefit:'Support for girl child',points:['For BPL families on birth of girl child','Financial assistance & maturity benefit','Apply via Women & Child Dept.'],apply:'https://sevasindhu.karnataka.gov.in',docs:['Birth certificate','BPL ration card','Mother Aadhaar','Bank account']},
   {name:'Raitha Scholar / Vidya Nidhi',cat:'farming',match:82,benefit:'Scholarship for farmers’ children',points:['For children of land-holding farmers','Study support after 10th standard','Via Seva Sindhu portal'],apply:'https://sevasindhu.karnataka.gov.in',docs:['Aadhaar','Land RTC','Marks card','Bank account']},
   {name:'Shakti – Free Bus Travel',cat:'women',match:93,benefit:'Free bus travel',points:['Free KSRTC bus travel for women','Within Karnataka','Show Aadhaar / ID in bus'],apply:'https://ksrtc.karnataka.gov.in',docs:['Karnataka photo ID / Aadhaar']},
   {name:'Anna Bhagya',cat:'women',match:89,benefit:'Free rice / cash support',points:['Extra rice support for BPL families','Via ration shop / DBT','For ration card holders'],apply:'https://ahara.kar.nic.in',docs:['Ration card','Aadhaar','Bank account']},
@@ -34,7 +39,7 @@ const byState={
   {name:'Mukhyamantri Majhi Ladki Bahin',cat:'women',match:94,benefit:'₹1,500 / month',points:['For women aged 21–65','Maharashtra resident families','Direct to Aadhaar-linked bank'],apply:'https://ladakibahin.maharashtra.gov.in',docs:['Aadhaar','Domicile / ration card','Bank account','Income proof']},
   {name:'Namo Shetkari Mahasanman Nidhi',cat:'farming',match:95,benefit:'₹6,000 / year extra',points:['Top-up over PM-KISAN for farmers','For PM-KISAN beneficiary farmers','Direct bank transfer'],apply:'https://nsmny.mahaitgov.in',docs:['Aadhaar','PM-KISAN ID','Land 7/12','Bank passbook']},
   {name:'Shravanbal Rajya Nivrutti Vetan',cat:'pension',match:91,benefit:'Monthly old-age pension',points:['For destitute citizens aged 65+','Maharashtra residents','Apply via Collector / Aaple Sarkar'],apply:'https://aaplesarkar.mahaonline.gov.in',docs:['Aadhaar','Age proof','Income certificate','Bank account']},
-  {name:'Mahatma Jyotiba Phule Jan Arogya',cat:'pension',match:85,benefit:'Free treatment up to ₹5 lakh',points:['Health cover for eligible families','Cashless in listed hospitals','Orange / yellow ration cards'],apply:'https://www.jeevandayee.gov.in',docs:['Ration card','Aadhaar','Income proof']},
+  {name:'Mahatma Jyotiba Phule Jan Arogya',cat:'healthcare',match:85,benefit:'Free treatment up to ₹5 lakh',points:['Health cover for eligible families','Cashless in listed hospitals','Orange / yellow ration cards'],apply:'https://www.jeevandayee.gov.in',docs:['Ration card','Aadhaar','Income proof']},
  ],
  'Uttar Pradesh':[
   {name:'UP Vridha Pension Yojana',cat:'pension',match:93,benefit:'₹1,000 / month',points:['For UP residents aged 60+','Low-income senior citizens','Quarterly direct transfer'],apply:'https://sspy-up.gov.in',docs:['Aadhaar','Age proof','Income certificate','Bank passbook']},
@@ -58,6 +63,6 @@ const byState={
  ],
 }
 export function schemesFor(state){
- const list=[...(byState[state]||[]),...central]
+ const list=[...(byState[state]||[]).map(s=>({...s,origin:state+' State'})),...central.map(s=>({...s,origin:'Central Govt'}))]
  return list.map((s,i)=>({id:(state||'in')+'-'+i,...s,state:state||'All India'}))
 }
