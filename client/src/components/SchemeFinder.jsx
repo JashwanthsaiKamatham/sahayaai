@@ -7,7 +7,7 @@ import {LayoutGrid} from 'lucide-react'
 const ICONS={...CAT_ICON,LayoutGrid}
 export default function SchemeFinder({state,setState,district,setDistrict,cat,setCat,schemes,allSchemes=[],onCheck,onListen,onSave,onApply,t}){
  const counts={}; allSchemes.forEach(s=>counts[s.cat]=(counts[s.cat]||0)+1); const allCount=allSchemes.length
- return <section id="finder" aria-labelledby="finder-title" className="max-w-7xl mx-auto px-4 -mt-2">
+ return <section id="finder" aria-labelledby="finder-title" className="w-full min-w-0">
   <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-[#E2E8F0] shadow-[0_24px_60px_rgba(6,78,59,.12)] p-6 sm:p-8">
    <h2 id="finder-title" className="font-extrabold text-[2rem] sm:text-4xl leading-snug break-words text-[#1B2E20]">{t.finderTitle}</h2>
    <p className="text-lg text-slate-600 mt-1">{t.finderSub}</p>

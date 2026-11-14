@@ -33,3 +33,13 @@ h1,h2,h3,.font-display{font-family:'Plus Jakarta Sans',Inter,'Noto Sans',sans-se
 .dark .text-slate-400{color:#94A3B8!important}
 .dark input,.dark select,.dark textarea{background-color:#0F1A2C!important;color:#E2E8F0!important;border-color:#263449!important}
 .dark header{background:rgba(11,18,32,.92)!important}
+/* ---- Global anti-overlap / responsive safety (all pages) ---- */
+html,body{max-width:100%;overflow-x:clip}
+#root{min-width:0}
+*,*::before,*::after{box-sizing:border-box}
+img,svg,video,canvas{max-width:100%}
+.flex>*,.grid>*{min-width:0}
+h1,h2,h3,p,span,b,small,li,a,button{overflow-wrap:break-word}
+button{max-width:100%}
+select,input,textarea{max-width:100%;min-width:0}
+@media (max-width:640px){ .max-w-7xl{padding-left:1rem;padding-right:1rem} }

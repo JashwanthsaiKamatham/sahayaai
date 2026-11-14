@@ -7,14 +7,9 @@ export const CATEGORIES=[
  {id:'women',label:'Women & Child Welfare',icon:'Baby'},
  {id:'wages',label:'Daily Wages',icon:'Hammer'},
 ]
-export const STATE_DISTRICTS={
- 'Karnataka':['Bengaluru Urban','Bengaluru Rural','Mysuru','Belagavi','Dharwad','Kalaburagi','Mangaluru (Dakshina Kannada)','Shivamogga','Tumakuru','Ballari','Hubballi-Dharwad'],
- 'Maharashtra':['Mumbai','Pune','Nagpur','Nashik','Aurangabad (Sambhajinagar)','Kolhapur','Solapur','Satara','Amravati','Thane'],
- 'Uttar Pradesh':['Lucknow','Varanasi','Gorakhpur','Agra','Kanpur Nagar','Prayagraj','Meerut','Bareilly','Aligarh','Moradabad'],
- 'Tamil Nadu':['Chennai','Coimbatore','Madurai','Tiruchirappalli','Salem','Tirunelveli','Thanjavur','Vellore','Erode','Thoothukudi'],
- 'Andhra Pradesh':['Visakhapatnam','Vijayawada (NTR)','Guntur','Nellore','Kurnool','Anantapur','Tirupati','Rajahmundry (East Godavari)'],
- 'Telangana':['Hyderabad','Warangal','Nizamabad','Karimnagar','Khammam','Nalgonda','Medak','Adilabad'],
-}
+import {STATES_UTS} from './states.js'
+export const STATE_DISTRICTS=Object.fromEntries(STATES_UTS.map(s=>[s.name,s.districts]))
+
 const central=[
  {name:'PM-KISAN Samman Nidhi',cat:'farming',match:95,benefit:'₹6,000 / year',points:['₹2,000 every 4 months to bank','For land-holding farmer families','Free e-KYC at CSC'],apply:'https://pmkisan.gov.in',docs:['Aadhaar','Land records','Bank passbook']},
  {name:'PM Awas Yojana – Gramin',cat:'housing',match:88,benefit:'Up to ₹1.20 lakh',points:['Money to build pucca house','For homeless / kutcha-house families','Paid in instalments to bank'],apply:'https://pmayg.nic.in',docs:['Aadhaar','Job card / income proof','Bank account','House photo']},
@@ -23,6 +18,13 @@ const central=[
  {name:'e-Shram Card',cat:'wages',match:92,benefit:'₹2 lakh insurance',points:['Free registration for unorganised workers','Accident insurance up to ₹2 lakh','One card for many benefits'],apply:'https://eshram.gov.in',docs:['Aadhaar','Mobile linked to Aadhaar','Bank account']},
  {name:'PM Vishwakarma',cat:'wages',match:84,benefit:'Loan @5% + ₹15,000 toolkit',points:['For artisans & craftspeople','Training with daily stipend','Cheap loan up to ₹3 lakh'],apply:'https://pmvishwakarma.gov.in',docs:['Aadhaar','Ration card','Bank passbook']},
  {name:'Ayushman Bharat (PM-JAY)',cat:'healthcare',match:86,benefit:'₹5 lakh health cover / year',points:['Free hospital treatment for family','Cashless at listed hospitals','For eligible low-income families'],apply:'https://beneficiary.nha.gov.in',docs:['Aadhaar','Ration card','Mobile number']},
+ {name:'PM Ujjwala Yojana',cat:'women',match:84,benefit:'Free LPG connection support',points:['LPG connection for adult woman of household','Subsidised refills as notified','Apply via LPG distributor / portal'],apply:'https://www.pmuy.gov.in',docs:['Aadhaar','Ration Card','Bank Account'],incomeMax:250000,occupations:['Woman'],states:['All India']},
+ {name:'Sukanya Samriddhi Yojana',cat:'women',match:80,benefit:'Savings for girl child',points:['Deposit account for girl below 10 years','Open at post office / bank','For girl child future education'],apply:'https://www.nsiindia.gov.in',docs:['Girl Birth Certificate','Parent Aadhaar/PAN'],incomeMax:9999999,occupations:['Woman'],states:['All India']},
+ {name:'National Scholarship Portal Schemes',cat:'farming',match:78,benefit:'Student scholarships',points:['Apply online for central scholarships','For eligible students by course/income','Check each scheme dates on NSP'],apply:'https://scholarships.gov.in',docs:['Aadhaar','Marks Card','Income Certificate','Bank Account'],incomeMax:9999999,occupations:['Small Farmer','Artisan','Daily Wage Worker','Woman'],states:['All India']},
+ {name:'PM Mudra Yojana (PMMY)',cat:'wages',match:81,benefit:'Business loans up to ₹20 lakh',points:['Shishu, Kishore, Tarun & Tarun Plus loans','For micro/small non-farm businesses','Via bank / NBFC / MFI'],apply:'https://www.mudra.org.in',docs:['Aadhaar + PAN','Business Proof','Bank Statements'],incomeMax:9999999,occupations:['Artisan','Daily Wage Worker'],states:['All India']},
+ {name:'Atal Pension Yojana',cat:'pension',match:83,benefit:'Pension after 60',points:['Enrol between age 18–40','Fixed pension ₹1,000–₹5,000 after 60','Bank savings account required'],apply:'https://www.npscra.nsdl.co.in',docs:['Aadhaar','Bank Savings Account','Mobile Number'],incomeMax:9999999,occupations:['Daily Wage Worker','Artisan','Small Farmer','Woman'],states:['All India']},
+ {name:'PM SVANidhi',cat:'wages',match:85,benefit:'Vendor micro-loan',points:['Working capital loan for street vendors','Interest subsidy on timely repayment','Digital cashback as notified'],apply:'https://pmsvanidhi.mohua.gov.in',docs:['Aadhaar','Vendor ID/Certificate','Bank Account'],incomeMax:9999999,occupations:['Daily Wage Worker'],states:['All India']},
+ {name:'PM Jan Dhan Yojana (PMJDY)',cat:'wages',match:88,benefit:'Zero-balance bank account',points:['Basic savings account with RuPay card','Overdraft facility as eligible','Foundation for DBT benefits'],apply:'https://pmjdy.gov.in',docs:['Aadhaar','Address Proof','Photo'],incomeMax:9999999,occupations:['Small Farmer','Artisan','Daily Wage Worker','Woman'],states:['All India']},
 ]
 const byState={
  'Karnataka':[
@@ -64,5 +66,5 @@ const byState={
 }
 export function schemesFor(state){
  const list=[...(byState[state]||[]).map(s=>({...s,origin:state+' State'})),...central.map(s=>({...s,origin:'Central Govt'}))]
- return list.map((s,i)=>({id:(state||'in')+'-'+i,...s,state:state||'All India'}))
+ return list.map((s,i)=>({status:'Verification Pending',source_url:'https://myscheme.gov.in',...s,id:(state||'in')+'-'+i,state:state||'All India'}))
 }

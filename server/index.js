@@ -142,10 +142,49 @@ app.post('/api/ai/chat',optionalAuth,async(req,res)=>{
  res.json({reply:g?g.text:localReply,source:g?`Gemini ${g.model}`:'Local assistant (Gemini unavailable)',schemes:recs.map(s=>({title:s.title,benefit:s.benefit}))});
 });
 
+// ---- Database-backed custom schemes (admin-managed, scalable registry) ----
+const memCustom=[];
+function shapeCustom(r){ return {id:r.id,name:r.name,level:r.level||'State',state:r.state||'',department:r.department||'',category:r.category||'Social Welfare',description:r.description||'',eligibility:r.eligibility||'Verification Pending',benefits:r.benefits||'',docs:Array.isArray(r.documents)?r.documents:[],apply:r.official_url||'',source_url:r.source_url||'',last_verified:r.last_verified||null,status:r.status||'Verification Pending',origin:r.level==='Central'?'Central Govt':(r.state||'State')+' State',custom:true}; }
+app.get('/api/schemes/custom',async(req,res)=>{
+ const {state,category,search,page=1,limit=100}=req.query||{};
+ if(supabase){ let q=supabase.from('custom_schemes').select('*').order('created_at',{ascending:false}).range((page-1)*limit, page*limit-1);
+  if(state) q=q.eq('state',state); if(category) q=q.eq('category',category); if(search) q=q.ilike('name',`%${search}%`);
+  const {data,error}=await q; if(error) return res.status(500).json({error:error.message}); return res.json((data||[]).map(shapeCustom)); }
+ let out=memCustom.map(shapeCustom); if(state)out=out.filter(s=>s.state===state); if(category)out=out.filter(s=>s.category===category); if(search)out=out.filter(s=>s.name.toLowerCase().includes(String(search).toLowerCase())); res.json(out.slice((page-1)*limit,page*limit));
+});
+function adminOnly(req,res,next){ const allow=(process.env.ADMIN_EMAILS||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean); if(!allow.includes((req.user.email||'').toLowerCase())) return res.status(403).json({error:'Admin access only. Ask the portal owner to add your email to ADMIN_EMAILS on the server.'}); next(); }
+app.post('/api/admin/schemes',auth,adminOnly,async(req,res)=>{
+ const b=req.body||{}; if(!b.name||!b.official_url) return res.status(400).json({error:'Scheme name and official application URL are required. Do not add unverified links.'});
+ const row={name:b.name,level:b.level||'State',state:b.state||'',department:b.department||'',category:b.category||'Social Welfare',description:b.description||'',eligibility:b.eligibility||'Verification Pending',benefits:b.benefits||'',documents:Array.isArray(b.documents)?b.documents:[],official_url:b.official_url,source_url:b.source_url||'',last_verified:b.last_verified||null,status:b.status||'Verification Pending'};
+ if(supabase){ const {data,error}=await supabase.from('custom_schemes').insert(row).select().single(); if(error) return res.status(500).json({error:error.message}); return res.json(shapeCustom(data)); }
+ const item={id:'c-'+Date.now(),...row}; memCustom.unshift(item); res.json(shapeCustom(item));
+});
+app.put('/api/admin/schemes/:id',auth,adminOnly,async(req,res)=>{
+ const b=req.body||{}; const row={name:b.name,level:b.level,state:b.state,department:b.department,category:b.category,description:b.description,eligibility:b.eligibility,benefits:b.benefits,documents:b.documents,official_url:b.official_url,source_url:b.source_url,last_verified:b.last_verified||null,status:b.status,updated_at:new Date().toISOString()};
+ Object.keys(row).forEach(k=>row[k]===undefined&&delete row[k]);
+ if(supabase){ const {data,error}=await supabase.from('custom_schemes').update(row).eq('id',req.params.id).select().single(); if(error) return res.status(500).json({error:error.message}); return res.json(shapeCustom(data)); }
+ const it=memCustom.find(x=>x.id===req.params.id); if(!it) return res.status(404).json({error:'Not found'}); Object.assign(it,row); res.json(shapeCustom(it));
+});
+app.delete('/api/admin/schemes/:id',auth,adminOnly,async(req,res)=>{
+ if(supabase){ const {error}=await supabase.from('custom_schemes').delete().eq('id',req.params.id); if(error) return res.status(500).json({error:error.message}); return res.json({ok:true}); }
+ const i=memCustom.findIndex(x=>x.id===req.params.id); if(i>=0)memCustom.splice(i,1); res.json({ok:true});
+});
+
+// ---- Central scheme registry (directory data; status stays Verification Pending until an admin verifies on the official source) ----
+const CENTRAL_EXTRA=[
+ {title:'PM Ujjwala Yojana',benefit:'Free LPG connection support',cat:'women',docs:['Aadhaar','Ration Card','Bank Account'],apply:'https://www.pmuy.gov.in',occupations:['Woman'],incomeMax:250000,states:['All India'],desc:'LPG connection support for adult women of eligible households.'},
+ {title:'Sukanya Samriddhi Yojana',benefit:'Savings account for girl child',cat:'women',docs:['Girl Birth Certificate','Parent Aadhaar/PAN','Address Proof'],apply:'https://www.nsiindia.gov.in',occupations:['Woman'],incomeMax:9999999,states:['All India'],desc:'Deposit account for a girl child at post office/bank.'},
+ {title:'National Scholarship Portal Schemes',benefit:'Scholarships for students',cat:'farming',docs:['Aadhaar','Previous Marks Card','Income Certificate','Bank Account'],apply:'https://scholarships.gov.in',occupations:['Small Farmer','Artisan','Daily Wage Worker','Woman'],incomeMax:9999999,states:['All India'],desc:'Central scholarship application portal for eligible students.'},
+ {title:'PM Mudra Yojana (PMMY)',benefit:'Business loans up to ₹20 lakh',cat:'wages',docs:['Aadhaar + PAN','Business Proof','Bank Statements'],apply:'https://www.mudra.org.in',occupations:['Artisan','Daily Wage Worker'],incomeMax:9999999,states:['All India'],desc:'Loans for non-farm micro/small enterprises via banks/NBFCs.'},
+ {title:'Atal Pension Yojana',benefit:'Pension after age 60',cat:'pension',docs:['Aadhaar','Bank Savings Account','Mobile Number'],apply:'https://www.npscra.nsdl.co.in',occupations:['Daily Wage Worker','Artisan','Small Farmer','Woman'],incomeMax:9999999,states:['All India'],desc:'Guaranteed pension scheme for unorganised sector workers (enrol 18-40).'},
+ {title:'PM SVANidhi',benefit:'Micro-loan for street vendors',cat:'wages',docs:['Aadhaar','Vendor Certificate/ID','Bank Account'],apply:'https://pmsvanidhi.mohua.gov.in',occupations:['Daily Wage Worker'],incomeMax:9999999,states:['All India'],desc:'Working-capital micro-loans for street vendors.'},
+ {title:'National Social Assistance Programme (NSAP)',benefit:'Social pensions',cat:'pension',docs:['Aadhaar','Age Proof','BPL Ration Card','Bank Passbook'],apply:'https://nsap.nic.in',occupations:['Woman','Daily Wage Worker'],incomeMax:150000,states:['All India'],desc:'Old-age, widow and disability pensions for BPL households (with state top-ups).'},
+ {title:'PM Jan Dhan Yojana (PMJDY)',benefit:'Zero-balance bank account',cat:'wages',docs:['Aadhaar','Address Proof','Passport Photo'],apply:'https://pmjdy.gov.in',occupations:['Small Farmer','Artisan','Daily Wage Worker','Woman'],incomeMax:9999999,states:['All India'],desc:'Basic savings bank account, RuPay card and financial inclusion.'},
+];
+app.get('/api/schemes/central',(req,res)=>res.json(CENTRAL_EXTRA.map((s,i)=>({id:'central-extra-'+i,...s,origin:'Central Govt',status:'Verification Pending',source_url:'https://myscheme.gov.in'}))));
+
 // ---- Admin stats (secure: JWT + ADMIN_EMAILS allowlist on server) ----
-app.get('/api/admin/stats',auth,async(req,res)=>{
- const allow=(process.env.ADMIN_EMAILS||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
- if(!allow.includes((req.user.email||'').toLowerCase())) return res.status(403).json({error:'Admin access only. Ask the portal owner to add your email to ADMIN_EMAILS on the server.'});
+app.get('/api/admin/stats',auth,adminOnly,async(req,res)=>{
  let users=null, items=null;
  if(supabase){ const u=await supabase.from('profiles').select('id',{count:'exact',head:true}); users=u.count; const i=await supabase.from('items').select('id',{count:'exact',head:true}); items=i.count; }
  else { users=memUsers.size; items=memItems.size; }

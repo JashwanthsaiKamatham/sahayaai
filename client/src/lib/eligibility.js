@@ -13,6 +13,8 @@ export function evaluateProfile(profile){
   if(s.states?.includes('All India')) reasons.push('Central scheme — available in all states')
   else if(s.states?.includes(profile.state)) reasons.push(`State scheme for ${profile.state}`)
   if(s.cat==='pension'&&age>=60) reasons.push('You are 60+, the senior-citizen age group')
+  if(profile.gender==='Female'&&s.cat==='women') reasons.push('Women-focused scheme and you selected Female')
+  if(profile.gender==='Male'&&s.cat==='women') missing.push('Women-focused scheme — check if a woman family member should apply')
   if(s.cat==='pension'&&age&&age<60) missing.push('Usually needs age 60/65+ — please confirm on official portal')
   const score=Math.max(35,Math.min(98,Math.round((reasons.length/(reasons.length+missing.length||1))*100)))
   return {...s,score,reasons,missing:missing.length?missing:['No missing item found in our directory rules'],status:score>=75?'Likely Eligible':score>=50?'Possibly Eligible':'Less Likely'}

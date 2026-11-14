@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react'
 import {motion,MotionConfig,AnimatePresence} from 'framer-motion'
-import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House} from 'lucide-react'
+import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House,Baby,Accessibility,Map as MapIcon} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import TiltCard from './components/TiltCard.jsx'
@@ -9,7 +9,7 @@ import LoginPage from './components/LoginPage.jsx'
 import ChatBot from './components/ChatBot.jsx'
 import EligibilityChecker from './components/EligibilityChecker.jsx'
 import DocumentAssistant from './components/DocumentAssistant.jsx'
-import {TrackingPage,AdminPage} from './pages-extra.jsx'
+import {TrackingPage,AdminPage,StatesPage} from './pages-extra.jsx'
 import {schemesFor,STATE_DISTRICTS} from './data/schemes.js'
 import {evaluateProfile} from './lib/eligibility.js'
 const API=import.meta.env.VITE_API_BASE_URL||'https://sahayaai-backend.onrender.com'
@@ -24,8 +24,8 @@ const GUIDE_T={en:{guideBtn:'Step-by-Step Guide',visitBtn:'Official Portal & App
 kn:{guideBtn:'ಹಂತ-ಹಂತದ ಮಾರ್ಗದರ್ಶಿ',visitBtn:'ಅಧಿಕೃತ ಪೋರ್ಟಲ್ & ಅರ್ಜಿ',tabGuide:'ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ಏನು ಮಾಡಬೇಕು',tabLink:'ನೇರ ಅಧಿಕೃತ ಲಿಂಕ್',hearSteps:'ಈ ಹಂತಗಳನ್ನು ಕೇಳಿ'},
 te:{guideBtn:'దశల వారీ గైడ్',visitBtn:'అధికారిక పోర్టల్ & దరఖాస్తు',tabGuide:'అధికారిక వెబ్‌సైట్‌లో ఏమి చేయాలి',tabLink:'నేరుగా అధికారిక లింక్',hearSteps:'ఈ దశలు వినండి'},
 hi:{guideBtn:'चरण-दर-चरण गाइड',visitBtn:'आधिकारिक पोर्टल और आवेदन',tabGuide:'आधिकारिक वेबसाइट पर क्या करें',tabLink:'सीधा आधिकारिक लिंक',hearSteps:'ये चरण सुनें'}}
-const CAT10=[['Education',GraduationCap],['Agriculture',Sprout],['Healthcare',HeartPulse],['Employment',Hammer],['Housing',House],['Women Empowerment',HeartHandshake],['Senior Citizens',HeartHandshake],['Financial Assistance',HandCoins],['Business and Entrepreneurship',Briefcase],['Social Welfare',ShieldCheck]]
-function tagsOf(s){const set=new Set();const map={farming:'Agriculture',pension:'Senior Citizens',housing:'Housing',healthcare:'Healthcare',women:'Women Empowerment',wages:'Employment'};if(map[s.cat])set.add(map[s.cat]);if(/scholar|vidya|kanya|thalliki|education|student/i.test(s.name))set.add('Education');if(/₹|pension|lakshmi|bahin|urimai/i.test(s.name+' '+s.benefit))set.add('Financial Assistance');if(/vishwakarma|artisan|business/i.test(s.name))set.add('Business and Entrepreneurship');if(['pension','women','wages'].includes(s.cat))set.add('Social Welfare');if(s.cat==='wages')set.add('Financial Assistance');return[...set]}
+const CAT10=[['Education and Scholarships',GraduationCap],['Agriculture and Farmers',Sprout],['Healthcare and Medical Assistance',HeartPulse],['Employment and Skill Development',Hammer],['Housing and Infrastructure',House],['Women Empowerment',HeartHandshake],['Senior Citizens',HeartHandshake],['Financial Assistance',HandCoins],['Small Business and Entrepreneurs',Briefcase],['Children and Family Welfare',Baby],['Disability Assistance',Accessibility],['Social Welfare',ShieldCheck]]
+function tagsOf(s){const set=new Set();const map={farming:'Agriculture and Farmers',pension:'Senior Citizens',housing:'Housing and Infrastructure',healthcare:'Healthcare and Medical Assistance',women:'Women Empowerment',wages:'Employment and Skill Development'};if(map[s.cat])set.add(map[s.cat]);if(/scholar|vidya|kanya|thalliki|education|student/i.test(s.name))set.add('Education and Scholarships'); if(/sukanya|kanya|bhagyalakshmi|children/i.test(s.name))set.add('Children and Family Welfare');if(/₹|pension|lakshmi|bahin|urimai/i.test(s.name+' '+s.benefit))set.add('Financial Assistance');if(/vishwakarma|artisan|business|mudra/i.test(s.name))set.add('Small Business and Entrepreneurs');if(['pension','women','wages'].includes(s.cat))set.add('Social Welfare');if(s.cat==='wages')set.add('Financial Assistance');return[...set]}
 function buildCatalog(){const m=new Map();Object.keys(STATE_DISTRICTS).forEach(st=>schemesFor(st).forEach(s=>{if(!m.has(s.name))m.set(s.name,{...s,homeState:st,tags:tagsOf(s)})}));return[...m.values()]}
 
 export default function App(){
@@ -42,7 +42,9 @@ export default function App(){
  const [items,setItems]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_saved')||'[]')}catch{return[]}})
  const [profile,setProfile]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_profile')||'{"state":"Karnataka","district":"Dharwad","occupation":"Small Farmer","income":150000,"age":45}')}catch{return{state:'Karnataka',district:'Dharwad',occupation:'Small Farmer',income:150000,age:45}}})
  const [ai,setAi]=useState(null);const [busy,setBusy]=useState(false)
- const catalog=useMemo(buildCatalog,[])
+ const [customSchemes,setCustomSchemes]=useState([])
+ useEffect(()=>{fetch(API+'/api/schemes/custom?limit=200').then(r=>r.json()).then(d=>{if(Array.isArray(d))setCustomSchemes(d)}).catch(()=>{})},[])
+ const catalog=useMemo(()=>{const base=buildCatalog();const seen=new Set(base.map(s=>s.name.toLowerCase()));const extra=customSchemes.filter(s=>!seen.has(s.name.toLowerCase())).map(s=>({...s,homeState:s.state,tags:s.tags||[s.category]}));return[...extra,...base]},[customSchemes])
  useEffect(()=>{localStorage.setItem('sahaya_lang',lang)},[lang]);useEffect(()=>{localStorage.setItem('sahaya_saved',JSON.stringify(items))},[items]);useEffect(()=>{document.documentElement.classList.toggle('dark',dark)},[dark])
  const all=useMemo(()=>schemesFor(state),[state]);const shown=useMemo(()=>cat==='all'?all:all.filter(s=>s.cat===cat),[all,cat])
  const explorerResults=useMemo(()=>catalog.filter(s=>{
@@ -66,7 +68,7 @@ export default function App(){
  async function askAI(scheme){setSelected(null);setBusy(true);try{const r=await fetch(API+'/api/ai/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({occupation:profile.occupation,state:state,income:profile.income,language:LANGS[lang].name,name:user?.full_name||'Citizen'})});const d=await r.json();if(!r.ok)throw new Error('ai');setAi({...d,for:scheme?.name});speak(d.summary);activity('Asked SahayaAI assistant')}catch{setMsg('AI is waking up (~40s on free plan). Please try again.')}finally{setBusy(false)}}
  function onVoice(txt){const low=txt.toLowerCase();const found=Object.keys(STATE_DISTRICTS).find(s=>low.includes(s.toLowerCase().split(' ')[0]));if(found){setState(found);setDistrict('')}if(low.includes('pension'))setCat('pension');if(low.includes('farm'))setCat('farming');setPage('finder');setTimeout(()=>document.getElementById('finder')?.scrollIntoView({behavior:'smooth'}),80)}
  const go=p=>{setPage(p);setMenu(false);window.scrollTo({top:0,behavior:'smooth'})}
- const NAV=[['home','Home',Home],['explore','Explore Schemes',Compass],['finder','AI Scheme Finder',Sprout],['chat','AI Assistant',Bot],['eligibility','Eligibility Checker',ClipboardCheck],['documents','Documents',FolderUp],['dashboard','My Dashboard',LayoutDashboard],['tracking','Track Application',Route],['about','About Us',Info]]
+ const NAV=[['home','Home',Home],['explore','Explore Schemes',Compass],['states','All India States',MapIcon],['finder','AI Scheme Finder',Sprout],['chat','AI Assistant',Bot],['eligibility','Eligibility Checker',ClipboardCheck],['documents','Documents',FolderUp],['dashboard','My Dashboard',LayoutDashboard],['tracking','Track Application',Route],['about','About Us',Info]]
  const recommended=useMemo(()=>evaluateProfile(profile).slice(0,3),[profile])
  const eligibilitySaved=(()=>{try{return JSON.parse(localStorage.getItem('sahaya_eligibility')||'null')}catch{return null}})()
  const trackingList=(()=>{try{return JSON.parse(localStorage.getItem('sahaya_tracking')||'[]')}catch{return[]}})()
@@ -158,6 +160,7 @@ export default function App(){
    {page==='finder'&&<><SchemeFinder state={state} setState={setState} district={district} setDistrict={setDistrict} cat={cat} setCat={setCat} schemes={shown} allSchemes={all} onCheck={setSelected} onListen={listenScheme} onSave={saveScheme} onApply={(s,tab)=>setGuide({scheme:s,tab:tab||'guide'})} t={t}/>
     <div className="bg-white rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 flex flex-wrap items-center gap-4 justify-between"><div><h3 className="font-extrabold text-2xl">Want a personalised answer?</h3><p className="text-slate-500 leading-relaxed">Answer 7 questions and get reasons, missing items and next steps for every scheme.</p></div><button onClick={()=>go('eligibility')} className="min-h-[52px] px-6 py-3 rounded-xl text-white font-extrabold shadow" style={{background:'#D97706'}}>Open Eligibility Checker</button></div></>}
 
+   {page==='states'&&<StatesPage catalog={catalog} onOpenScheme={s=>setGuide({scheme:s,tab:'guide'})} onSelectState={s=>{ if(STATE_DISTRICTS[s.name]){setState(s.name);setDistrict('');setExState(s.name);go('finder')} else go('explore') }}/>}
    {page==='chat'&&<ChatBot langName={LANGS[lang].name} langSpeech={LANGS[lang].speech} state={state} occupation={profile.occupation} speak={speak}/>}
    {page==='eligibility'&&<EligibilityChecker onSave={saveScheme} onGuide={(s,tab)=>setGuide({scheme:s,tab})} initial={profile}/>}
    {page==='documents'&&<DocumentAssistant schemes={catalog} onGuide={(s,tab)=>setGuide({scheme:s,tab})}/>}

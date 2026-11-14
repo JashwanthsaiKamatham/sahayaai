@@ -5,7 +5,7 @@ import {STATE_DISTRICTS} from '../data/schemes.js'
 import {evaluateProfile} from '../lib/eligibility.js'
 const F='w-full min-h-[52px] h-auto rounded-xl border border-[#E2E8F0] px-4 py-3 text-[1.02rem] bg-white outline-none focus:border-emerald-600'
 export default function EligibilityChecker({onSave,onGuide,initial={}}){
- const [form,setForm]=useState({age:45,state:'Karnataka',district:'Dharwad',occupation:'Small Farmer',income:150000,education:'Primary (1-5)',family:'Married with children',...initial})
+ const [form,setForm]=useState({age:45,state:'Karnataka',district:'Dharwad',occupation:'Small Farmer',income:150000,education:'Primary (1-5)',family:'Married with children',gender:'Female',...initial})
  const [results,setResults]=useState(null);const [err,setErr]=useState('')
  function run(e){e.preventDefault(); if(!form.age||Number(form.age)<1||Number(form.age)>120)return setErr('Please enter a correct age (1–120).'); if(!form.state||!form.district)return setErr('Please choose your State and District.'); if(Number(form.income)<0)return setErr('Income cannot be negative.'); setErr(''); const r=evaluateProfile(form); setResults(r); localStorage.setItem('sahaya_eligibility',JSON.stringify({form,at:new Date().toISOString(),top:r.slice(0,3).map(x=>x.name)})); }
  const set=(k,v)=>setForm(f=>({...f,[k]:v}))
@@ -21,6 +21,7 @@ export default function EligibilityChecker({onSave,onGuide,initial={}}){
     <label className="flex flex-col gap-1.5 font-bold text-slate-700">Occupation<select value={form.occupation} onChange={e=>set('occupation',e.target.value)} className={F}><option>Small Farmer</option><option>Artisan</option><option>Daily Wage Worker</option><option>Woman</option><option>Student</option><option>Senior Citizen</option></select></label>
     <label className="flex flex-col gap-1.5 font-bold text-slate-700">Annual Family Income (₹)<input type="number" min="0" step="5000" value={form.income} onChange={e=>set('income',e.target.value)} className={F}/></label>
     <label className="flex flex-col gap-1.5 font-bold text-slate-700">Education Level<select value={form.education} onChange={e=>set('education',e.target.value)} className={F}><option>No formal education</option><option>Primary (1-5)</option><option>Secondary (6-10)</option><option>Higher Secondary (11-12)</option><option>Graduate & above</option></select></label>
+    <label className="flex flex-col gap-1.5 font-bold text-slate-700">Gender (only where relevant)<select value={form.gender} onChange={e=>set('gender',e.target.value)} className={F}><option>Female</option><option>Male</option><option>Other / Prefer not to say</option></select></label>
     <label className="flex flex-col gap-1.5 font-bold text-slate-700">Family Status<select value={form.family} onChange={e=>set('family',e.target.value)} className={F}><option>Single</option><option>Married with children</option><option>Married, no children</option><option>Widow / Widower</option><option>Senior living with family</option></select></label>
    </div>
    <button className="min-h-[52px] h-auto whitespace-normal px-6 py-3 rounded-xl text-white font-extrabold text-lg shadow-lg mt-6 inline-flex gap-2 items-center" style={{background:'#064E3B'}}>Check My Eligibility <ArrowRight size={19}/></button>
