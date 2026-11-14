@@ -1,7 +1,8 @@
-import {useEffect,useMemo,useState} from 'react'
+import {useEffect,useMemo,useState,lazy,Suspense} from 'react'
 import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House,Baby,Accessibility,Map as MapIcon,Mic,ChevronDown,LayoutGrid} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
+const GlobeHero=lazy(()=>import('./components/GlobeHero.jsx'))
 import TiltCard from './components/TiltCard.jsx'
 import GuideModal from './components/GuideModal.jsx'
 import LoginPage from './components/LoginPage.jsx'
@@ -122,7 +123,8 @@ export default function App(){
    {page==='home'&&<>
     {/* HERO */}
     <section className="rounded-[2rem] overflow-hidden text-white shadow-xl" style={{background:'linear-gradient(120deg,#0B2447 0%,#123B63 48%,#064E3B 100%)'}}>
-     <div className="p-6 sm:p-10 lg:p-12 flex flex-col gap-6 max-w-3xl">
+     <div className="p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center max-w-[1280px] mx-auto w-full">
+      <div className="flex flex-col gap-6 min-w-0">
       <span className="inline-flex w-fit items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 text-sm font-bold break-words"><ShieldCheck size={16} className="text-amber-300 shrink-0"/> {u.heroBadge}</span>
       <h1 className="font-extrabold tracking-tight leading-[1.08] break-words" style={{fontSize:'clamp(2.1rem,5.5vw,3.6rem)'}}>{u.heroA} <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-amber-300">{u.heroB}</span></h1>
       <p className="text-lg sm:text-xl text-slate-200 leading-relaxed break-words">{u.heroSub}</p>
@@ -136,6 +138,10 @@ export default function App(){
       </div>
       <div className="grid grid-cols-3 gap-3 max-w-md">{[[catalog.length,u.schemesInDir],[Object.keys(STATE_DISTRICTS).length,u.statesCovered],[Object.keys(LANGS).length,u.languages]].map(x=><div key={x[1]} className="bg-white/[.08] border border-white/15 rounded-2xl p-3.5 text-center"><b className="block text-2xl leading-tight">{x[0]}</b><span className="text-slate-300 text-xs font-bold break-words block">{x[1]}</span></div>)}</div>
       <p className="text-xs text-slate-400 font-semibold">{u.dirNote}</p>
+      </div>
+      <div className="relative w-full min-w-0 h-[320px] sm:h-[420px] lg:h-[520px]">
+       <Suspense fallback={<div className="w-full h-full grid place-items-center" aria-hidden="true"><span className="text-[6rem] leading-none opacity-70">🌐</span></div>}><GlobeHero lang={lang}/></Suspense>
+      </div>
      </div>
     </section>
 
