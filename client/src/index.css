@@ -1,0 +1,5 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+body{background:#F8FAFC;color:#0f172a}
+.glass{background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.7);box-shadow:0 10px 30px rgba(15,23,42,.08)}
+.btn{font-weight:800;border-radius:14px;padding:.7rem 1rem}
+input,select,textarea{outline:none} input:focus,select:focus,textarea:focus{border-color:#059669!important;box-shadow:0 0 0 3px #a7f3d0}
