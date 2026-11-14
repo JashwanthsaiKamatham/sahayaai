@@ -4,6 +4,7 @@ import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import TiltCard from './components/TiltCard.jsx'
+import GuideModal from './components/GuideModal.jsx'
 import {schemesFor} from './data/schemes.js'
 const API=import.meta.env.VITE_API_BASE_URL||'https://sahayaai-backend.onrender.com'
 const LANGS={en:{label:'English',speech:'en-IN',name:'English'},hi:{label:'हिंदी',speech:'hi-IN',name:'Hindi'},kn:{label:'ಕನ್ನಡ',speech:'kn-IN',name:'Kannada'},te:{label:'తెలుగు',speech:'te-IN',name:'Telugu'},ta:{label:'தமிழ்',speech:'ta-IN',name:'Tamil'},mr:{label:'मराठी',speech:'mr-IN',name:'Marathi'}}
@@ -15,11 +16,19 @@ te:{finderTitle:'మీ కోసం ప్రభుత్వ పథకాలు
 ta:{finderTitle:'உங்களுக்கான அரசு திட்டங்களைக் கண்டறியுங்கள்',finderSub:'வணக்கம் 🙏 உள்நுழைவு தேவையில்லை. மாநிலம், மாவட்டம் தேர்ந்தெடுங்கள்.',step1:'படி 1 • உங்கள் மாநிலம்',step2:'படி 2 • உங்கள் மாவட்டம்',step3:'படி 3 • உங்களுக்கு என்ன வேண்டும்?',chooseState:'— மாநிலம் தேர்வு —',chooseDistrict:'— மாவட்டம் தேர்வு —',firstState:'முதலில் மாநிலம் தேர்வு செய்யுங்கள்',emptyTitle:'நீங்கள் எங்கே வசிக்கிறீர்கள்?',emptyText:'மேலே மாநிலம் மற்றும் மாவட்டத்தைத் தேர்ந்தெடுங்கள்.',noCat:'இந்த பிரிவில் திட்டம் இல்லை',noCatSub:'“All Schemes” தேர்ந்து அனைத்தையும் பாருங்கள்.',schemesForYou:'திட்டங்கள் உங்களுக்கு',check:'தகுதி',apply:'விண்ணப்பிக்க',listen:'படித்து கேளுங்கள்',save:'சேமி',voice:'பேசி தேடுங்கள்',listening:'கேட்கிறேன்… பேசுங்கள்',voiceHint:'மாநிலம், வேலை அல்லது திட்டம் சொல்லுங்கள்.',tapSpeak:'தட்டி பேசுங்கள்',voiceUnsupported:'குரலுக்கு Chrome பயன்படுத்துங்கள்.',checkTitle:'தகுதி சரிபார்ப்பு',heroTitle:'அரசு உதவி, உங்கள் மொழியில்.',heroSub:'பெரிய பொத்தான்கள். எளிய வார்த்தைகள். உள்நுழைவு இல்லை.',findBtn:'என் திட்டங்களைக் கண்டறியுங்கள்',saved:'என் சேமித்த திட்டங்கள்',guide:'படிப்படியான விண்ணப்ப வழிகாட்டி'},
 mr:{finderTitle:'तुमच्यासाठी सरकारी योजना शोधा',finderSub:'नमस्कार 🙏 लॉगिनची गरज नाही. राज्य आणि जिल्हा निवडा.',step1:'पायरी 1 • तुमचे राज्य',step2:'पायरी 2 • तुमचा जिल्हा',step3:'पायरी 3 • तुम्हाला काय हवे?',chooseState:'— राज्य निवडा —',chooseDistrict:'— जिल्हा निवडा —',firstState:'आधी राज्य निवडा',emptyTitle:'तुम्ही कुठे राहता?',emptyText:'कृपया वर राज्य आणि जिल्हा निवडा.',noCat:'या श्रेणीत योजना नाही',noCatSub:'“All Schemes” निवडून सर्व पहा.',schemesForYou:'योजना तुमच्यासाठी',check:'पात्रता',apply:'अर्ज करा',listen:'वाचून ऐका',save:'जतन करा',voice:'बोलून शोधा',listening:'ऐकत आहे… बोला',voiceHint:'राज्य, काम किंवा योजना सांगा.',tapSpeak:'दाबून बोला',voiceUnsupported:'आवाजासाठी Chrome वापरा.',checkTitle:'पात्रता तपासणी',heroTitle:'सरकारी मदत, तुमच्या भाषेत.',heroSub:'मोठी बटणे. सोपी भाषा. लॉगिन नाही. एजंट नाही.',findBtn:'माझ्या योजना शोधा',saved:'माझ्या जतन योजना',guide:' टप्प्याटप्प्याने अर्ज मार्गदर्शक'}}
 
+const GUIDE_T={
+en:{guideBtn:'View Step-by-Step Guide',visitBtn:'Visit Official Government Website & Guide',tabGuide:'What to do on the Official Website',tabLink:'Direct Official Link',hearSteps:'Hear these steps',officialVerified:'Official Government Scheme',leavingTitle:'You are now leaving SahayaAI.',leavingBody:'Please use your credentials carefully on the official government portal. SahayaAI will never ask for your bank password or OTP.',officialWebsite:'Official Government Website',staysOpen:'The official site opens in a new tab — this guide stays open here. Come back to this tab anytime to re-read the steps.'},
+hi:{guideBtn:'चरण-दर-चरण मार्गदर्शिका देखें',visitBtn:'आधिकारिक सरकारी वेबसाइट और गाइड खोलें',tabGuide:'आधिकारिक वेबसाइट पर क्या करें',tabLink:'सीधा आधिकारिक लिंक',hearSteps:'ये चरण सुनें'},
+kn:{guideBtn:'ಹಂತ-ಹಂತದ ಮಾರ್ಗದರ್ಶಿ ನೋಡಿ',visitBtn:'ಅಧಿಕೃತ ಸರ್ಕಾರಿ ವೆಬ್‌ಸೈಟ್ ಮತ್ತು ಮಾರ್ಗದರ್ಶಿ ತೆರೆಯಿರಿ',tabGuide:'ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ಏನು ಮಾಡಬೇಕು',tabLink:'ನೇರ ಅಧಿಕೃತ ಲಿಂಕ್',hearSteps:'ಈ ಹಂತಗಳನ್ನು ಕೇಳಿ'},
+te:{guideBtn:'దశల వారీ గైడ్ చూడండి',visitBtn:'అధికారిక ప్రభుత్వ వెబ్‌సైట్ & గైడ్ తెరవండి',tabGuide:'అధికారిక వెబ్‌సైట్‌లో ఏమి చేయాలి',tabLink:'నేరుగా అధికారిక లింక్',hearSteps:'ఈ దశలు వినండి'},
+ta:{guideBtn:'படிப்படியான வழிகாட்டியைப் பாருங்கள்',visitBtn:'அதிகாரப்பூர்வ அரசு இணையதளம் & வழிகாட்டி',tabGuide:'அதிகாரப்பூர்வ இணையதளத்தில் என்ன செய்ய வேண்டும்',tabLink:'நேரடி அதிகாரப்பூர்வ இணைப்பு',hearSteps:'இந்த படிகளைக் கேளுங்கள்'},
+mr:{guideBtn:'टप्प्याटप्प्याने मार्गदर्शक पहा',visitBtn:'अधिकृत सरकारी वेबसाइट आणि मार्गदर्शक उघडा',tabGuide:'अधिकृत वेबसाइटवर काय करावे',tabLink:'थेट अधिकृत लिंक',hearSteps:'या पायऱ्या ऐका'}}
+
 export default function App(){
- const [lang,setLang]=useState(localStorage.getItem('sahaya_lang')||'en');const t=T[lang]||T.en
+ const [lang,setLang]=useState(localStorage.getItem('sahaya_lang')||'en');const t={...(T[lang]||T.en),...(GUIDE_T[lang]||{})}
  const [large,setLarge]=useState(false)
  const [state,setState]=useState('');const [district,setDistrict]=useState('');const [cat,setCat]=useState('all')
- const [selected,setSelected]=useState(null);const [applyScheme,setApplyScheme]=useState(null)
+ const [selected,setSelected]=useState(null);const [guide,setGuide]=useState(null) // {scheme, tab:'guide'|'link'}
  const [msg,setMsg]=useState('')
  const [items,setItems]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_saved')||'[]')}catch{return[]}})
  const [ai,setAi]=useState(null);const [busy,setBusy]=useState(false)
@@ -78,7 +87,7 @@ export default function App(){
 
   {msg&&<div className="max-w-7xl mx-auto px-4 sm:px-6"><p role="status" className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 font-bold leading-relaxed break-words mb-4">{msg}</p></div>}
 
-  <SchemeFinder state={state} setState={setState} district={district} setDistrict={setDistrict} cat={cat} setCat={setCat} schemes={shown} allSchemes={all} onCheck={setSelected} onListen={listenScheme} onSave={saveScheme} onApply={setApplyScheme} t={t}/>
+  <SchemeFinder state={state} setState={setState} district={district} setDistrict={setDistrict} cat={cat} setCat={setCat} schemes={shown} allSchemes={all} onCheck={setSelected} onListen={listenScheme} onSave={saveScheme} onApply={(s,tab)=>setGuide({scheme:s,tab:tab||'guide'})} t={t}/>
 
   <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-28 flex flex-col gap-6">
    {ai&&<section className="bg-emerald-50 border-2 border-emerald-200 rounded-[2rem] p-6 sm:p-8" aria-live="polite"><div className="flex flex-wrap justify-between items-start gap-3"><h2 className="font-extrabold text-2xl leading-snug break-words">🤖 SahayaAI says {ai.for?`• ${ai.for}`:''}</h2><button onClick={()=>speak(ai.summary)} aria-label={t.listen} className="min-w-[52px] min-h-[52px] h-auto px-5 py-3 rounded-full bg-white border-2 grid place-items-center shrink-0"><Volume2/></button></div><p className="text-lg leading-relaxed break-words mt-3 whitespace-pre-line">{ai.summary}</p><p className="font-extrabold mt-4">Documents to carry:</p><div className="flex flex-wrap gap-2 mt-2">{ai.checklist?.map(d=><span key={d} className="bg-white border rounded-full px-3 py-2 font-semibold leading-snug break-words inline-flex gap-2 items-center"><CheckCircle2 size={18} className="text-emerald-700 shrink-0"/>{d}</span>)}</div><small className="text-stone-500 break-words">{ai.source}</small></section>}
@@ -102,23 +111,12 @@ export default function App(){
     <div><h4 className="font-extrabold text-xl">✅ You may be eligible if:</h4><ul className="flex flex-col gap-2 mt-2 text-lg leading-relaxed">{selected.points.map(p=><li key={p} className="flex gap-2 break-words"><CheckCircle2 className="text-emerald-700 shrink-0 mt-1"/>{p}</li>)}</ul></div>
     <div><h4 className="font-extrabold text-xl">🧾 Carry these documents:</h4><div className="flex flex-wrap gap-2 mt-2">{selected.docs.map(d=><span key={d} className="bg-amber-50 border border-amber-200 rounded-full px-3 py-2 font-semibold leading-snug break-words">{d}</span>)}</div></div>
     <p className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 font-semibold leading-relaxed break-words flex gap-2"><ShieldCheck className="shrink-0 text-emerald-800 mt-1"/> Registration is FREE. Take originals + 2 copies to Grama One / CSC.</p>
-    <div className="flex flex-wrap gap-3"><button onClick={()=>askAI(selected)} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl text-white font-extrabold leading-snug" style={{background:'#064e3b'}}>🤖 Ask AI</button><button onClick={()=>{setApplyScheme(selected);setSelected(null)}} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl font-extrabold leading-snug border-2 inline-flex justify-center items-center" style={{borderColor:'#C05621',color:'#9C4221'}}>{t.apply} ↗</button></div>
+    <div className="flex flex-wrap gap-3"><button onClick={()=>askAI(selected)} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl text-white font-extrabold leading-snug" style={{background:'#064e3b'}}>🤖 Ask AI</button><button onClick={()=>{setGuide({scheme:selected,tab:'link'});setSelected(null)}} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl font-extrabold leading-snug border-2 inline-flex justify-center items-center" style={{borderColor:'#C05621',color:'#9C4221'}}>{t.apply} ↗</button></div>
     <button onClick={()=>listenScheme(selected)} className="min-h-[52px] h-auto whitespace-normal px-5 py-3 w-full rounded-2xl bg-amber-100 font-extrabold leading-snug inline-flex justify-center items-center gap-2"><Volume2/> {t.listen}</button>
    </motion.div></motion.div>}</AnimatePresence>
 
-  {/* APPLY GUIDE MODAL */}
-  <AnimatePresence>{applyScheme&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={t.guide}>
-   <motion.div initial={{y:60}} animate={{y:0}} exit={{y:60}} className="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col gap-4">
-    <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="font-extrabold text-2xl leading-snug break-words flex-1">{t.guide}</h3><button onClick={()=>setApplyScheme(null)} aria-label="Close" className="min-w-[52px] min-h-[52px] px-3 py-3 grid place-items-center rounded-full bg-stone-100 shrink-0"><X size={24}/></button></div>
-    <p className="font-extrabold text-xl leading-relaxed break-words">{applyScheme.name} • <span style={{color:'#C05621'}}>{applyScheme.benefit}</span></p>
-    <ol className="flex flex-col gap-3 text-lg leading-relaxed">
-     <li className="flex gap-3"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#064e3b'}}>1</span><span className="break-words"><b>Keep documents ready:</b> {applyScheme.docs.join(', ')} (originals + 2 photocopies).</span></li>
-     <li className="flex gap-3"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#064e3b'}}>2</span><span className="break-words"><b>Go online or visit:</b> Tap the official website button below, or go to your nearest <b>Grama One / CSC / Seva Sindhu centre</b> in {district||'your district'}{state?', '+state:''}.</span></li>
-     <li className="flex gap-3"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#064e3b'}}>3</span><span className="break-words"><b>Fill & submit free:</b> Registration is <b>₹0</b>. Never pay an agent. Take the acknowledgement/receipt number and keep it safe.</span></li>
-     <li className="flex gap-3"><span className="w-9 h-9 rounded-full text-white grid place-items-center font-extrabold shrink-0" style={{background:'#064e3b'}}>4</span><span className="break-words"><b>Track:</b> Money/status comes to your bank / phone. Come back here and tap <b>Read Aloud</b> anytime to hear this scheme again.</span></li>
-    </ol>
-    <div className="flex flex-wrap gap-3"><a href={applyScheme.apply} target="_blank" rel="noreferrer" className="flex-1 min-w-[180px] min-h-[52px] h-auto whitespace-normal break-words px-5 py-3 rounded-2xl text-white font-extrabold leading-snug inline-flex justify-center items-center text-center shadow" style={{background:'#15803d'}}>Open Official Website ↗</a><button onClick={()=>setApplyScheme(null)} className="flex-1 min-w-[140px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl border-2 font-extrabold leading-snug">Not Now</button></div>
-   </motion.div></motion.div>}</AnimatePresence>
+  {/* OFFICIAL WEBSITE & STEP-BY-STEP GUIDE MODAL */}
+  <AnimatePresence>{guide&&<GuideModal key={guide.scheme.id+"-"+guide.tab} scheme={guide.scheme} initialTab={guide.tab} state={state} district={district} onClose={()=>setGuide(null)} t={t} langSpeech={LANGS[lang].speech}/>}</AnimatePresence>
 
   <VoiceAssist langSpeech={LANGS[lang].speech} onTranscript={onVoice} t={t}/>
  </div></MotionConfig>
