@@ -93,7 +93,8 @@ function localAI({occupation,state,income,language,name}){
  const checklist=[...new Set(list.flatMap(s=>s.docs))];
  return {summary,eligible:list,checklist,tip:'Go on Tuesday–Friday morning to avoid crowd. Carry originals + 2 photocopies + passport photo.'};
 }
-app.post('/api/ai/generate',auth,async(req,res)=>{
+function optionalAuth(req,res,next){ const h=req.headers.authorization||''; const t=h.startsWith('Bearer ')?h.slice(7):null; if(t){ try{req.user=jwt.verify(t,process.env.JWT_SECRET||'dev-secret')}catch{} } next(); }
+app.post('/api/ai/generate',optionalAuth,async(req,res)=>{
  const body=req.body||{}; const fallback=localAI(body);
  const key=process.env.GEMINI_API_KEY;
  if(!key) return res.json({...fallback,source:'smart-local (add GEMINI_API_KEY for Gemini AI)'});

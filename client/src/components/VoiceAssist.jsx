@@ -12,9 +12,8 @@ export default function VoiceAssist({langSpeech,onTranscript,t}){
   try{r.start()}catch{}
  }
  return <>
-  <motion.button initial={{scale:0}} animate={{scale:1}} transition={{delay:.6,type:'spring'}} onClick={()=>{setOpen(true);start()}} aria-label={t.voice} className="fixed bottom-5 right-5 z-50 w-[72px] h-[72px] rounded-full text-white shadow-2xl grid place-items-center focus:outline-none focus:ring-4 focus:ring-amber-300" style={{background:'linear-gradient(135deg,#C05621,#ED8936)'}}>
-   <span className="absolute inset-0 rounded-full animate-ping bg-orange-400 opacity-25" aria-hidden/>
-   <Mic size={32} className="relative"/>
+  <motion.button initial={{scale:0}} animate={{scale:1}} transition={{delay:.6,type:'spring'}} onClick={()=>{setOpen(true);start()}} aria-label={t.voice} className="fixed bottom-6 right-6 z-50 min-w-[72px] min-h-[72px] w-[72px] h-[72px] rounded-full text-white shadow-2xl grid place-items-center focus:outline-none focus:ring-4 focus:ring-amber-300" style={{background:'linear-gradient(135deg,#C05621,#ED8936)'}}>
+   <Mic size={32} className="animate-pulse"/>
    <span className="sr-only">{t.voice}</span>
   </motion.button>
   <AnimatePresence>{open&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-50 bg-black/50 grid place-items-end sm:place-items-center p-3" role="dialog" aria-modal="true" aria-label={t.voice}>
