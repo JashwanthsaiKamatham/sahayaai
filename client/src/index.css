@@ -24,7 +24,7 @@ input,select,textarea{outline:none;background:#fff} input:focus,select:focus,tex
 button,a,select,input{min-height:48px} select,input,textarea{font-size:1rem}
 @media (prefers-reduced-motion: reduce){.animate-ping{animation:none!important}}
 
-h1,h2,h3,.font-display{font-family:'Plus Jakarta Sans',Inter,'Noto Sans',sans-serif;letter-spacing:-.03em}
+h1,h2,h3,.font-display{font-family:'Plus Jakarta Sans',Inter,'Noto Sans','Noto Sans Kannada','Noto Sans Devanagari','Noto Sans Telugu','Noto Sans Tamil',sans-serif;letter-spacing:-.03em}
 /* Dark mode (class strategy, overrides light surfaces) */
 .dark body{background:#0B1220!important;color:#E2E8F0!important}
 .dark .bg-white,.dark .bg-white\/85,.dark .bg-white\/90,.dark .bg-white\/92{background-color:#111C2E!important;color:#E2E8F0!important}
