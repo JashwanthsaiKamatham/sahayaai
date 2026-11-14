@@ -1,4 +1,5 @@
 import {Sprout,HeartHandshake,Baby,Hammer,ShieldCheck,CheckCircle2,ExternalLink,Volume2,BookmarkPlus,HeartPulse,Sun,BadgeCheck,Landmark} from 'lucide-react'
+import IsoIcon from './IsoIcon.jsx'
 export const CAT_ICON={farming:Sprout,pension:HeartHandshake,housing:Sun,women:Baby,wages:Hammer,healthcare:HeartPulse}
 const CAT_LABEL={farming:'Farming & Crops',pension:'Senior Citizen Pension',housing:'Housing & Solar',women:'Women & Child Welfare',wages:'Daily Wages',healthcare:'Healthcare'}
 export default function SchemeCard({scheme,onCheck,onListen,onSave,onApply,t}){
@@ -8,11 +9,11 @@ export default function SchemeCard({scheme,onCheck,onListen,onSave,onApply,t}){
  const MINISTRY={farming:'Ministry of Agriculture & Farmers Welfare',pension:'Ministry of Social Justice & Empowerment',housing:'Ministry of Rural Development / MNRE',healthcare:'Ministry of Health & Family Welfare',women:'Ministry of Women & Child Development',wages:'Ministry of Labour & Employment'}
  const ministry=isCentral?(MINISTRY[scheme.cat]||'Government of India'):scheme.origin+' • State Government'
  const R=22,CIRC=2*Math.PI*R
- return <article className="depth-card p-6 flex flex-col justify-between gap-4">
+ return <article className="depth-card lift p-6 flex flex-col justify-between gap-4">
   <div className="flex flex-col gap-4">
    {/* Top row — all in normal flow, wraps cleanly */}
    <div className="flex flex-wrap items-start justify-between gap-3">
-    <span className="inline-flex items-center gap-2 rounded-full px-3 py-2 font-bold text-base leading-snug break-words" style={{background:'#ECFDF5',color:'#14532D'}}><Icon size={19} className="shrink-0"/>{CAT_LABEL[scheme.cat]||scheme.cat}</span>
+    <span className="inline-flex items-center gap-2 rounded-full pl-1 pr-3 py-1 font-bold text-base leading-snug break-words" style={{background:'#ECFDF5',color:'#14532D'}}><IsoIcon kind={scheme.cat} Icon={Icon} size={34}/>{CAT_LABEL[scheme.cat]||scheme.cat}</span>
     <span className="flex items-center gap-2 shrink-0">
      <svg width="52" height="52" viewBox="0 0 52 52" className="-rotate-90 shrink-0" aria-hidden="true"><circle cx="26" cy="26" r={R} fill="none" stroke="#E7E5E4" strokeWidth="6"/><circle cx="26" cy="26" r={R} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC-(CIRC*scheme.match/100)}/></svg>
      <span className="font-extrabold leading-tight" style={{color}}>{scheme.match}%<span className="block text-sm text-stone-500 font-bold">Match</span></span>

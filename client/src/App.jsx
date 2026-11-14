@@ -3,6 +3,8 @@ import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import ThemeBackdrop from './components/ThemeBackdrop.jsx'
+import IsoIcon from './components/IsoIcon.jsx'
+import {CAT_ICON} from './components/SchemeCard.jsx'
 const GlobeHero=lazy(()=>import('./components/GlobeHero.jsx'))
 import TiltCard from './components/TiltCard.jsx'
 import GuideModal from './components/GuideModal.jsx'
@@ -84,7 +86,9 @@ export default function App(){
 
  if(view==='login')return <LoginPage lang={lang} setLang={setLang} LANGS={LANGS} onEmailLogin={emailLogin} onGuest={guestLogin} onDemoLogin={demoLogin}/>
 
- return <div className="min-h-screen bg-[#F8FAFC] text-slate-900 leading-relaxed pt-[72px]" style={{fontSize:large?19:17}}>
+ return <div className="min-h-screen leading-relaxed pt-[72px]" style={{fontSize:large?19:17}}>
+  {/* Sitewide Sahaya Fabric backdrop (fixed, behind content; header/modals above) */}
+  <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true"><ThemeBackdrop density={0.55} opacity={0.5}/></div>
   {/* NAV — fixed glassmorphic header: 3-zone grid, pill nav, static 3D, no animations */}
   <header className="glass-header">
    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-[72px] grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
@@ -118,6 +122,7 @@ export default function App(){
     <button onClick={signOut} className="min-h-[48px] rounded-2xl border-2 font-extrabold col-span-2 depth-sm bg-white" style={{borderColor:'#0B2447',color:'#0B2447'}}>{u.signOut}</button></div></nav>}
   </header>
 
+  <div className="fabric relative z-10">
   <main className="home-mesh max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 pb-28">
    {msg&&<p role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 font-semibold leading-relaxed break-words">{msg}<button onClick={()=>setMsg('')} className="float-right font-extrabold px-2" aria-label="Dismiss">✕</button></p>}
 
@@ -149,6 +154,9 @@ export default function App(){
       <p className="text-xs text-slate-400 font-semibold">{u.dirNote}</p>
       </div>
       <div className="relative w-full min-w-0 h-[320px] sm:h-[420px] lg:h-[520px]">
+       <span className="absolute -top-10 -left-10 w-60 h-60 rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(59,130,246,.38),transparent 65%)',filter:'blur(12px)'}} aria-hidden="true"/>
+       <span className="absolute -bottom-12 -right-8 w-64 h-64 rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(16,185,129,.30),transparent 65%)',filter:'blur(12px)'}} aria-hidden="true"/>
+       <span className="absolute top-1/3 -right-14 w-44 h-44 rounded-full pointer-events-none" style={{background:'radial-gradient(circle,rgba(245,158,11,.22),transparent 65%)',filter:'blur(10px)'}} aria-hidden="true"/>
        <Suspense fallback={<div className="w-full h-full grid place-items-center" aria-hidden="true"><span className="text-[6rem] leading-none opacity-70">🌐</span></div>}><GlobeHero lang={lang}/></Suspense>
       </div>
      </div>
@@ -157,10 +165,12 @@ export default function App(){
     {/* POPULAR */}
     <section><div className="flex flex-wrap justify-between items-end gap-3"><div><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.popEyebrow}</p><h2 className="font-extrabold text-3xl tracking-tight mt-1">{u.popTitle}</h2></div><button onClick={()=>go('explore')} className="min-h-[48px] px-5 rounded-full border-2 font-extrabold" style={{borderColor:'#0B2447',color:'#0B2447'}}>{u.viewAll}</button></div>
      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">{catalog.slice(0,6).map(s=><MiniCard key={s.name} s={s} u={u} onGuide={()=>setGuide({scheme:s,tab:'guide'})} onSave={()=>saveScheme(s)} onListen={()=>listenScheme(s)}/>)}</div></section>
+    <div className="glow-divider" aria-hidden="true"/>
 
     {/* CATEGORIES */}
     <section><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>{u.catEyebrow}</p><h2 className="font-extrabold text-3xl tracking-tight mt-1">{u.catTitle}</h2>
      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 mt-5">{CAT10.map(([c,Icon])=>{const n=catalog.filter(s=>s.tags.includes(c)).length;return <TiltCard key={c} onClick={()=>{setExCat(c);go('explore')}} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm hover:shadow-xl p-5 text-left cursor-pointer w-full"><span className="w-11 h-11 rounded-2xl bg-emerald-50 grid place-items-center"><Icon size={22} className="text-emerald-700"/></span><b className="block mt-2.5 leading-snug break-words">{c}</b><span className="text-sm text-slate-400 font-semibold">{n} {u.schemesWord}</span></TiltCard>})}</div></section>
+    <div className="glow-divider" aria-hidden="true"/>
 
     {/* HOW + WHY */}
     <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -242,6 +252,7 @@ export default function App(){
    </div>
    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8 text-slate-400 text-sm border-t border-white/10 pt-5 leading-relaxed">Disclaimer: SahayaAI simplifies public government information and is not an official government website. Eligibility shown is guidance only — final approval rests solely with the Government department. Always verify on official .gov.in / .nic.in portals. Never pay anyone for free schemes. • Made in India 🇮🇳</div>
   </footer>
+  </div>
 
   {selected&&<div className="fixed inset-0 z-[1200] bg-black/55 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={t.checkTitle}>
    <div className="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col gap-4">
@@ -257,8 +268,8 @@ export default function App(){
  </div>
 }
 function MiniCard({s,onGuide,onSave,onListen,onShare,onCompare,compared,u}){const L=u||UI_T.en;
- return <article className="depth-card theme-frame p-6 flex flex-col gap-3">
-  <div className="flex flex-wrap justify-between gap-2"><span className="rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1.5 text-[.8rem] font-bold break-words">{s.origin}</span><span className="rounded-full px-3 py-1.5 text-sm font-extrabold text-white shrink-0" style={{background:(s.match||80)>=90?'#047857':'#D97706'}}>{s.match||'—'}% {L.match}</span></div>
+ return <article className="depth-card theme-frame lift p-6 flex flex-col gap-3">
+  <div className="flex flex-wrap justify-between gap-2"><span className="inline-flex items-center gap-2 min-w-0"><IsoIcon kind={s.cat} Icon={CAT_ICON[s.cat]||ShieldCheck} size={38}/><span className="rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1.5 text-[.8rem] font-bold break-words">{s.origin}</span></span><span className="rounded-full px-3 py-1.5 text-sm font-extrabold text-white shrink-0" style={{background:(s.match||80)>=90?'#047857':'#D97706'}}>{s.match||'—'}% {L.match}</span></div>
   <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold text-sm"><ShieldCheck size={15}/>{L.verified}</span>
   <h3 className="font-extrabold text-[1.3rem] leading-snug break-words">{s.name}</h3>
   <p className="font-extrabold break-words" style={{color:'#D97706'}}>{s.benefit}</p>

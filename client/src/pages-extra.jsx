@@ -9,7 +9,7 @@ export function TrackingPage({schemes}){
  function add(e){e.preventDefault(); if(!f.ref.trim())return alert('Please type the Application Reference Number exactly as on your official receipt. We never create one for you.'); setList([{...f,id:Date.now()},...list]); setF({...f,ref:'',pending:''}); log('Added application tracking (your update)')}
  function log(msg){try{const a=JSON.parse(localStorage.getItem('sahaya_activity')||'[]');a.unshift({msg,at:new Date().toLocaleString()});localStorage.setItem('sahaya_activity',JSON.stringify(a.slice(0,12)))}catch{}}
  return <section className="flex flex-col gap-6">
-  <div className="bg-white dark-card rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+  <div className="bg-white dark-card rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8 theme-frame">
    <h2 className="font-extrabold text-3xl tracking-tight">Application Tracking</h2>
    <p className="text-slate-500 leading-relaxed mt-1 flex gap-2"><FileWarning className="text-amber-600 shrink-0 mt-0.5"/> <span><b>Honest tracking:</b> SahayaAI has no official government status integration. This tracker shows <b>only updates you enter yourself</b> from official receipts/portals. We never invent a status or reference number.</span></p>
    <form onSubmit={add} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-5">
@@ -22,10 +22,13 @@ export function TrackingPage({schemes}){
    </form>
   </div>
   {list.length===0?<div className="bg-white rounded-3xl border border-dashed border-slate-300 p-10 text-center text-slate-500 font-semibold">No applications added yet. After applying on an official portal, add your receipt details here to track them yourself.</div>
-  :<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">{list.map(a=>{const idx=STEPS.indexOf(a.status);return <article key={a.id} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col gap-3">
+  :<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">{list.map(a=>{const idx=STEPS.indexOf(a.status);return <article key={a.id} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col gap-3 lift">
    <div className="flex flex-wrap justify-between gap-2"><b className="text-xl leading-snug break-words flex-1">{a.scheme}</b><span className="rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 px-3 py-1.5 font-extrabold text-sm shrink-0 h-fit">{a.status}</span></div>
    <p className="text-slate-600 leading-relaxed break-words"><b>Ref:</b> {a.ref} • <b>Submitted:</b> {a.date}<br/><b>Pending documents:</b> {a.pending||'None reported by you'}</p>
-   <ol className="flex flex-col gap-2.5 mt-1">{STEPS.map((s,i)=><li key={s} className="flex items-center gap-3"><span className={`w-8 h-8 rounded-full grid place-items-center font-extrabold text-sm shrink-0 ${i<=idx?'text-white':'bg-slate-100 text-slate-400'}`} style={i<=idx?{background:'#047857'}:{}}>{i<=idx?'✓':i+1}</span><span className={`font-semibold ${i<=idx?'text-slate-800':'text-slate-400'}`}>{s}</span>{i<STEPS.length-1&&''}</li>)}</ol>
+   <ol className="relative flex flex-col gap-4 mt-2" aria-label="Application progress timeline">
+    <span className="timeline-rail absolute left-[19px] top-3 bottom-3 w-[3px] rounded-full" aria-hidden="true"/>
+    {STEPS.map((s,i)=>{const reached=i<=idx;const done=i<idx||(a.status==='Approved'&&reached);const current=i===idx&&a.status!=='Approved'&&a.status!=='Rejected';const col=a.status==='Rejected'?'#F87171':done?'#10B981':current?'#F59E0B':'#3B82F6';return <li key={s} className="relative flex items-center gap-3.5"><span className="node-orb relative z-10 w-10 h-10 rounded-full grid place-items-center font-extrabold text-sm shrink-0 text-white" style={{background:`radial-gradient(circle at 32% 28%, rgba(255,255,255,.9), ${col} 45%, ${col})`,opacity:reached||current?1:.5}}>{done?'✓':i+1}</span><span className={`font-semibold leading-snug ${reached?'':'opacity-60'}`}>{s}</span>{current&&<span className="rounded-full px-2.5 py-1 text-xs font-extrabold text-amber-200" style={{background:'rgba(245,158,11,.18)',border:'1px solid rgba(245,158,11,.5)'}}>Current step</span>}</li>})}
+   </ol>
    {a.status==='Rejected'&&<p className="text-red-700 font-bold bg-red-50 border border-red-200 rounded-2xl p-3">Status marked Rejected by you. Please check the official portal for the reason and re-apply if allowed.</p>}
    <button onClick={()=>setList(list.filter(x=>x.id!==a.id))} className="min-h-[44px] px-4 rounded-full bg-white border font-bold text-red-700 inline-flex gap-1.5 items-center w-fit"><Trash2 size={16}/>Remove</button>
   </article>})}</div>}
@@ -56,6 +59,8 @@ export function AdminPage({token,catalog}){
 
 import {STATES_UTS,CATEGORIES12} from './data/states.js'
 import {MapPin,Search,ExternalLink,BadgeCheck,Clock3} from 'lucide-react'
+import IsoIcon from './components/IsoIcon.jsx'
+import {CAT_ICON} from './components/SchemeCard.jsx'
 export function StatesPage({catalog,onOpenScheme,onSelectState}){
  const [q,setQ]=useState('');const [sel,setSel]=useState(null);const [catF,setCatF]=useState('All Categories');const [visible,setVisible]=useState(6)
  const filtered=STATES_UTS.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.districts.some(d=>d.toLowerCase().includes(q.toLowerCase())))
@@ -86,8 +91,8 @@ export function StatesPage({catalog,onOpenScheme,onSelectState}){
     <span className="rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 font-bold inline-flex gap-1.5 items-center"><Clock3 size={17}/> {shownSchemes.filter(s=>s.status!=='Active').length} Verification Pending</span>
    </div>
    {shownSchemes.filter(s=>s.homeState===sel.name).length===0&&<p className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 font-semibold leading-relaxed break-words">State-specific schemes for {sel.name} are being verified from the official state portal and myscheme.gov.in. Until verification is complete we list only Central Government schemes below — we will not invent state scheme details. Administrators can add verified {sel.name} schemes from the Admin Dashboard.</p>}
-   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">{shownSchemes.slice(0,visible).map(s=><article key={s.name} className="rounded-3xl border border-[#E2E8F0] shadow-sm hover:shadow-xl p-5 flex flex-col gap-2.5 bg-white min-w-0">
-     <div className="flex flex-wrap gap-2"><span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-extrabold">{s.origin}</span><span className="rounded-md bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-1 text-xs font-extrabold">{s.status||'Verification Pending'}</span></div>
+   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">{shownSchemes.slice(0,visible).map(s=><article key={s.name} className="rounded-3xl border border-[#E2E8F0] shadow-sm p-5 flex flex-col gap-2.5 bg-white min-w-0 lift">
+     <div className="flex flex-wrap items-center gap-2"><IsoIcon kind={s.cat} Icon={CAT_ICON[s.cat]||ShieldCheck} size={36}/><span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-extrabold">{s.origin}</span><span className="rounded-md bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-1 text-xs font-extrabold">{s.status||'Verification Pending'}</span></div>
      <h4 className="font-extrabold text-[1.2rem] leading-snug break-words">{s.name}</h4><p className="font-extrabold break-words" style={{color:'#D97706'}}>{s.benefit||s.benefits||''}</p>
      <ul className="text-slate-600 leading-relaxed flex flex-col gap-1">{(s.points||[]).slice(0,3).map(p=><li key={p} className="break-words">• {p}</li>)}{s.description&&<li className="break-words">{s.description}</li>}</ul>
      <p className="text-sm text-slate-500 break-words"><b>Documents:</b> {(s.docs||[]).join(', ')||'As per official portal'}</p>

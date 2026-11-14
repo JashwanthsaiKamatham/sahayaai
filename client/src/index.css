@@ -1,6 +1,6 @@
 @tailwind base;@tailwind components;@tailwind utilities;
 :root{--navy:#101B2D;--emerald:#087F5B;--bright:#10B981;--ivory:#FAF9F4;--neutral:#F2F4F1;--muted:#687385;--gold:#E8B96B}
-html{scroll-behavior:smooth}body{font-size:16px;background:#F8FAFC;color:#0F172A;letter-spacing:-.01em;font-family:Inter,"Noto Sans","Noto Sans Kannada","Noto Sans Devanagari","Noto Sans Telugu","Noto Sans Tamil","Noto Sans Malayalam",system-ui,sans-serif}
+html{scroll-behavior:smooth}body{font-size:16px;background:#060B19;color:#0F172A;letter-spacing:-.01em;font-family:Inter,"Noto Sans","Noto Sans Kannada","Noto Sans Devanagari","Noto Sans Telugu","Noto Sans Tamil","Noto Sans Malayalam",system-ui,sans-serif}
 .font-display{font-family:Manrope,Inter,"Noto Sans",sans-serif}
 .glass{background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.75);box-shadow:0 18px 45px rgba(16,27,45,.10)}
 .card{background:#fff;border:1px solid #e8ece7;border-radius:24px;box-shadow:0 10px 30px rgba(16,27,45,.06);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s}
@@ -45,7 +45,8 @@ select,input,textarea{max-width:100%;min-width:0}
 @media (max-width:640px){ .max-w-7xl{padding-left:1rem;padding-right:1rem} }
 
 /* ---- Ultra-clean fixed glass header + static 3D depth (ZERO animations) ---- */
-*,*::before,*::after{animation:none!important;transition:none!important}
+/* Motion: hover lift, voice orb pulse, canvas only — disabled for reduced-motion users */
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 html{scroll-behavior:auto!important}
 .glass-header{position:fixed;top:0;left:0;width:100%;z-index:1000;background:rgba(248,250,252,.84);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(15,23,42,.08);box-shadow:0 10px 30px rgba(15,23,42,.10),inset 0 1px 0 rgba(255,255,255,.65)}
 .dark .glass-header{background:rgba(11,18,32,.88)}
@@ -65,3 +66,37 @@ html{scroll-behavior:auto!important}
 .glass-input{background:rgba(255,255,255,.09)!important;border:1px solid rgba(255,255,255,.20)!important;color:#F1F5F9!important}
 .glass-input::placeholder{color:#94A3B8!important}
 .glass-input:focus{border-color:#10B981!important;box-shadow:0 0 0 4px rgba(16,185,129,.22)!important}
+
+/* ---- Sitewide "Sahaya Fabric": midnight glass surfaces over the neural backdrop ---- */
+.glass-header{color:#0F172A}
+.fabric{color:#E6EEF7}
+.fabric .bg-white,.fabric .bg-white\/85,.fabric .bg-white\/80,.fabric .bg-white\/90,.fabric .bg-white\/92,.fabric .bg-white\/95,.fabric .bg-white\/70{background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.04))!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-color:rgba(59,130,246,.22)!important;color:#E6EEF7!important}
+.fabric .depth-card{background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.04));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-color:rgba(59,130,246,.25);color:#E6EEF7}
+.fabric .text-slate-900,.fabric .text-slate-800{color:#F1F5F9!important}
+.fabric .text-slate-700,.fabric .text-slate-600,.fabric .text-stone-700,.fabric .text-stone-600{color:#CBD5E1!important}
+.fabric .text-slate-500,.fabric .text-stone-500{color:#9FB0C3!important}
+.fabric .text-slate-400{color:#8496AD!important}
+.fabric .text-red-700{color:#FCA5A5!important}
+.fabric .bg-slate-50,.fabric .bg-slate-100,.fabric .bg-stone-100,.fabric .bg-amber-50,.fabric .bg-amber-50\/70,.fabric .bg-emerald-50,.fabric .bg-red-50{background:rgba(255,255,255,.06)!important;color:#E6EEF7!important}
+.fabric input,.fabric select,.fabric textarea{background:rgba(255,255,255,.07)!important;color:#F1F5F9!important;border-color:rgba(255,255,255,.18)!important}
+.fabric select option{background:#0B2447;color:#F1F5F9}
+.fabric ::placeholder{color:#8496AD!important}
+/* Glowing section divider */
+.glow-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.55),rgba(245,158,11,.50),rgba(16,185,129,.50),transparent);box-shadow:0 0 18px rgba(59,130,246,.35)}
+/* 3D glass card hover lift (gold node highlight) */
+.lift{transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s,border-color .35s;will-change:transform}
+.lift:hover{transform:translateY(-6px);border-color:rgba(245,158,11,.5)!important;box-shadow:0 24px 48px rgba(2,6,17,.50),0 0 0 1px rgba(245,158,11,.22),0 0 32px rgba(245,158,11,.12),inset 0 1px 0 rgba(255,255,255,.25)}
+/* Voice orb */
+@keyframes orbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+.orb-core{animation:orbPulse 2.8s ease-in-out infinite;will-change:transform}
+@keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.32)}100%{box-shadow:0 0 0 24px rgba(16,185,129,0)}}
+.orb-rings{animation:ringPulse 2.8s ease-out infinite}
+/* Progress timeline */
+.timeline-rail{background:linear-gradient(180deg,#3B82F6,#10B981,#F59E0B);box-shadow:0 0 14px rgba(59,130,246,.55)}
+.node-orb{box-shadow:0 0 0 5px rgba(255,255,255,.06),0 8px 20px rgba(2,6,17,.5),inset 0 2px 3px rgba(255,255,255,.5),inset 0 -6px 10px rgba(0,0,0,.35)}
+@media (max-width:640px){.lift:hover{transform:none}}
+
+/* Fabric contrast fixes for inline-styled navy/emerald outline buttons */
+.fabric button[style*="rgb(11, 36, 71)"],.fabric a[style*="rgb(11, 36, 71)"]{color:#93C5FD!important;border-color:rgba(147,197,253,.55)!important}
+.fabric button[style*="#0B2447"],.fabric a[style*="#0B2447"]{color:#93C5FD!important;border-color:rgba(147,197,253,.55)!important}
+.fabric button[style*="rgb(6, 78, 59)"]:not([style*="background"]),.fabric button[style*="#064E3B"]:not([style*="background"]){color:#6EE7B7!important;border-color:rgba(16,185,129,.55)!important}
