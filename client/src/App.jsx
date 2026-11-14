@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from 'react'
-const API = import.meta.env.VITE_API_BASE_URL || ''
+const API = import.meta.env.VITE_API_BASE_URL || 'https://sahayaai-backend.onrender.com'
 const LANGS={en:{label:'English',speech:'en-IN'},kn:{label:'ಕನ್ನಡ',speech:'kn-IN'},hi:{label:'हिंदी',speech:'hi-IN'},te:{label:'తెలుగు',speech:'te-IN'}}
 const T={
  en:{hero:'Government schemes, in your language.',sub:'Find money & benefits you are eligible for — simple, free, no agent needed.',login:'Login',signup:'Sign Up',sample:'🌾 1-Click Sample Farmer Profile',listen:'🔊 Listen',askAI:'🤖 Ask SahayaAI',save:'Save Scheme',my:'My Saved Schemes & Checklists',docs:'Documents needed'},
