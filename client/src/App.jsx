@@ -1,10 +1,11 @@
 import {useEffect,useMemo,useState} from 'react'
 import {motion,MotionConfig,AnimatePresence} from 'framer-motion'
-import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck} from 'lucide-react'
+import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import TiltCard from './components/TiltCard.jsx'
 import GuideModal from './components/GuideModal.jsx'
+import LoginPage from './components/LoginPage.jsx'
 import {schemesFor} from './data/schemes.js'
 const API=import.meta.env.VITE_API_BASE_URL||'https://sahayaai-backend.onrender.com'
 const LANGS={en:{label:'English',speech:'en-IN',name:'English'},hi:{label:'हिंदी',speech:'hi-IN',name:'Hindi'},kn:{label:'ಕನ್ನಡ',speech:'kn-IN',name:'Kannada'},te:{label:'తెలుగు',speech:'te-IN',name:'Telugu'},ta:{label:'தமிழ்',speech:'ta-IN',name:'Tamil'},mr:{label:'मराठी',speech:'mr-IN',name:'Marathi'}}
@@ -25,6 +26,9 @@ ta:{guideBtn:'படிப்படியான வழிகாட்டிய�
 mr:{guideBtn:'टप्प्याटप्प्याने मार्गदर्शक पहा',visitBtn:'अधिकृत सरकारी वेबसाइट आणि मार्गदर्शक उघडा',tabGuide:'अधिकृत वेबसाइटवर काय करावे',tabLink:'थेट अधिकृत लिंक',hearSteps:'या पायऱ्या ऐका'}}
 
 export default function App(){
+ const [token,setToken]=useState(localStorage.getItem('sahaya_token')||'')
+ const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_user'))}catch{return null}})
+ const [view,setView]=useState(()=>localStorage.getItem('sahaya_token')?'dashboard':'login')
  const [lang,setLang]=useState(localStorage.getItem('sahaya_lang')||'en');const t={...(T[lang]||T.en),...(GUIDE_T[lang]||{})}
  const [large,setLarge]=useState(false)
  const [state,setState]=useState('');const [district,setDistrict]=useState('');const [cat,setCat]=useState('all')
@@ -40,34 +44,46 @@ export default function App(){
  const listenScheme=s=>speak(`${s.name}. ${s.benefit}. ${s.points.join('. ')}`)
  function saveScheme(s){ if(items.some(i=>i.title===s.name))return setMsg('Already saved ❤️ '+s.name); setItems([{id:'local-'+Date.now(),title:s.name,description:s.points.join(' • '),ai_summary:`${s.benefit} | ${s.match}% Match | Docs: ${s.docs.join(', ')}`},...items]); setMsg('Saved on this phone ✅ '+s.name) }
  async function askAI(scheme){ setSelected(null); setBusy(true); setMsg('🤖 SahayaAI is thinking…'); try{ const r=await fetch(API+'/api/ai/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({occupation:'Small Farmer',state:state||'Karnataka',income:120000,language:LANGS[lang].name,name:'Citizen'})}); const d=await r.json(); if(!r.ok)throw new Error(d.error||'AI busy'); setAi({...d,for:scheme?.name}); setMsg(''); speak(d.summary) }catch(e){ setMsg('⚠️ AI is waking up (~40s on free plan). Your schemes below are still fully usable. Please tap again.') }finally{setBusy(false)} }
+ async function emailLogin(form,signup){const r=await fetch(API+(signup?'/api/auth/signup':'/api/auth/login'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(form)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Login failed. Please check email & password.');setToken(d.token);setUser(d.user);localStorage.setItem('sahaya_token',d.token);localStorage.setItem('sahaya_user',JSON.stringify(d.user));setView('dashboard');setMsg('Welcome, '+d.user.full_name)}
+ function guestLogin(){setUser({full_name:'Guest Citizen',email:'guest@sahaya.ai',guest:true});setView('dashboard');setMsg('Welcome, Guest Citizen. You can explore all schemes freely.')}
+ async function demoLogin(){try{const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'demo@example.com',password:'demo1234'})});const d=await r.json();if(!r.ok)throw new Error('Demo waking up');setToken(d.token);setUser(d.user);localStorage.setItem('sahaya_token',d.token);localStorage.setItem('sahaya_user',JSON.stringify(d.user));setState('Karnataka');setDistrict('Dharwad');setView('dashboard')}catch{guestLogin();setState('Karnataka');setDistrict('Dharwad')}}
+ function signOut(){setToken('');setUser(null);localStorage.removeItem('sahaya_token');localStorage.removeItem('sahaya_user');setView('login')}
  function onVoice(txt){const low=txt.toLowerCase();const states=['Karnataka','Maharashtra','Uttar Pradesh','Tamil Nadu','Andhra Pradesh','Telangana'];const found=states.find(s=>low.includes(s.toLowerCase().split(' ')[0]));if(found){setState(found);setDistrict('');setMsg('📍 State: '+found+'. Now choose your District in Step 2.')}if(low.includes('pension')||low.includes('senior'))setCat('pension');if(low.includes('farm')||low.includes('kisan'))setCat('farming');if(low.includes('health')||low.includes('hospital'))setCat('healthcare');document.getElementById('finder')?.scrollIntoView({behavior:'smooth'})}
 
+ if(view==='login') return <MotionConfig reducedMotion="user"><LoginPage lang={lang} setLang={setLang} LANGS={LANGS} onEmailLogin={emailLogin} onGuest={guestLogin} onDemoLogin={demoLogin}/></MotionConfig>
  return <MotionConfig reducedMotion="user"><div className="min-h-screen text-[#292524] leading-relaxed" style={{background:'#faf8f5',fontSize:large?19:18}}>
   <a href="#finder" className="sr-only focus:not-sr-only focus:block focus:bg-white focus:p-4 focus:font-extrabold">Skip to Scheme Finder</a>
   {/* HEADER — logo left, language switcher right, all wrapping in flow */}
-  <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b-2 border-emerald-900/10 shadow-sm">
-   <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col gap-3">
-    <div className="flex flex-wrap items-center justify-between gap-4">
-     <a href="#" className="flex items-center gap-3 min-h-[52px] shrink-0"><span className="w-12 h-12 rounded-2xl grid place-items-center text-white shadow shrink-0" style={{background:'#064e3b'}}><Sprout size={26}/></span><span className="leading-tight"><b className="block text-[1.5rem] font-extrabold break-words">SahayaAI</b><small className="text-stone-500 font-bold break-words">For Farmers • Elders • Families — No Login Needed</small></span></a>
-     <button onClick={()=>setLarge(!large)} aria-pressed={large} className="min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl border-2 font-extrabold inline-flex gap-2 items-center bg-white shrink-0"><Type size={20}/>{large?'A':'A+ Large Text'}</button>
+  <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b shadow-sm" style={{borderColor:'#E2E8F0'}}>
+   <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+    <a href="#" className="flex items-center gap-3 min-h-[52px] shrink-0">
+     <span className="w-11 h-11 rounded-xl grid place-items-center text-white shadow shrink-0" style={{background:'#064E3B'}}><Landmark size={24}/></span>
+     <span className="leading-tight"><b className="text-[1.35rem] font-extrabold tracking-tight block text-slate-900">SahayaAI</b><span className="inline-flex rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-2 py-0.5 text-[.72rem] font-bold break-words">Official Scheme Discovery Portal</span></span>
+    </a>
+    <div className="flex flex-wrap items-center gap-2.5">
+     <label className="inline-flex items-center gap-2 rounded-full border bg-white pl-3 pr-1 py-1 shadow-sm" style={{borderColor:'#E2E8F0'}}><span className="text-sm font-bold text-slate-500 hidden sm:inline">Language</span>
+      <select value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language" className="min-h-[40px] rounded-full text-white font-bold px-3 outline-none cursor-pointer" style={{background:'#064E3B'}}>{Object.entries(LANGS).map(([k,v])=><option key={k} value={k} className="text-slate-900 bg-white">{v.label}</option>)}</select></label>
+     <button onClick={()=>setLarge(!large)} aria-pressed={large} aria-label="Toggle large text" className="min-h-[44px] px-3 rounded-full border bg-white font-extrabold inline-flex gap-1.5 items-center text-slate-600 shadow-sm" style={{borderColor:'#E2E8F0'}}><Type size={17}/>{large?'A':'A+'}</button>
+     {user&&<span className="inline-flex items-center gap-2 rounded-full bg-slate-900 text-white pl-1.5 pr-4 py-1.5 shadow max-w-full"><span className="w-8 h-8 rounded-full grid place-items-center shrink-0" style={{background:'#D97706'}}><UserRound size={17}/></span><span className="leading-tight min-w-0"><b className="block text-sm break-words">{user.full_name}</b><small className="block text-slate-300 text-xs break-all">{user.email||''}</small></span></span>}
+     <button onClick={signOut} className="min-h-[44px] h-auto whitespace-normal px-4 py-2 rounded-full border-2 font-extrabold inline-flex gap-1.5 items-center bg-white active:scale-95 transition" style={{borderColor:'#064E3B',color:'#064E3B'}}><LogOut size={17}/>Sign Out</button>
     </div>
-    <nav aria-label="Choose language" className="flex flex-wrap gap-2">
-     {Object.entries(LANGS).map(([k,v])=><button key={k} onClick={()=>setLang(k)} aria-pressed={lang===k} className={`min-h-[52px] h-auto whitespace-normal break-words rounded-full px-5 py-3 font-extrabold border-2 leading-snug transition active:scale-95 ${lang===k?'text-white shadow-lg':'bg-white text-stone-700'}`} style={lang===k?{background:'#d97706',borderColor:'#d97706'}:{borderColor:'#E7E5E4'}}>{v.label}</button>)}
-    </nav>
    </div>
+   <nav aria-label="Choose language" className="max-w-7xl mx-auto px-4 sm:px-6 pb-3 flex flex-wrap gap-1.5">
+    {Object.entries(LANGS).map(([k,v])=><button key={k} onClick={()=>setLang(k)} aria-pressed={lang===k} className={`min-h-[40px] h-auto whitespace-normal px-3.5 py-1.5 rounded-full text-sm font-bold border transition active:scale-95 ${lang===k?'text-white shadow':'bg-white text-slate-500'}`} style={lang===k?{background:'#D97706',borderColor:'#D97706'}:{borderColor:'#E2E8F0'}}>{v.label}</button>)}
+   </nav>
   </header>
 
   {/* HERO — text & photo side-by-side in grid flow, no overlapping text */}
   <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-8">
-   <div className="rounded-[2rem] p-6 sm:p-8 text-white shadow-xl" style={{background:'linear-gradient(130deg,#064e3b 0%,#14532D 60%,#92400E 135%)'}}>
+   <div className="rounded-[2rem] p-6 sm:p-8 text-white shadow-xl" style={{background:'linear-gradient(135deg,#064E3B 0%,#065F46 70%,#047857 100%)'}}>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
      <div className="flex flex-col gap-4">
-      <span className="inline-flex w-fit max-w-full items-center gap-2 bg-white/10 border border-white/25 rounded-full px-4 py-2 font-bold leading-snug break-words">🌾 Free • No Login • In Your Language</span>
+      <span className="inline-flex w-fit max-w-full items-center gap-2 bg-white/10 border border-white/25 rounded-full px-4 py-2 font-bold leading-snug break-words">Verified Schemes • 6 Languages • Zero Fees</span>
       <motion.h1 initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} className="font-extrabold leading-tight break-words" style={{fontSize:'clamp(2rem,5vw,3.4rem)'}}>{t.heroTitle}</motion.h1>
       <p className="text-emerald-50 text-lg sm:text-xl leading-relaxed break-words">{t.heroSub}</p>
       <div className="flex flex-wrap gap-3">
-       <a href="#finder" className="min-h-[52px] h-auto whitespace-normal break-words px-6 py-3 rounded-full font-extrabold text-lg leading-snug inline-flex items-center bg-white text-emerald-950 shadow-xl active:scale-95 transition">🔎 {t.findBtn}</a>
-       <button onClick={()=>{setState('Karnataka');setDistrict('Dharwad');document.getElementById('finder')?.scrollIntoView({behavior:'smooth'})}} className="min-h-[52px] h-auto whitespace-normal break-words px-6 py-3 rounded-full font-extrabold text-lg leading-snug inline-flex items-center border-2 border-white/50 bg-white/10 active:scale-95 transition">🌾 Example: Karnataka</button>
+       <a href="#finder" className="min-h-[52px] h-auto whitespace-normal break-words px-6 py-3 rounded-full font-extrabold text-lg leading-snug inline-flex items-center bg-white text-emerald-950 shadow-xl active:scale-95 transition">{t.findBtn} →</a>
+       <button onClick={()=>{setState('Karnataka');setDistrict('Dharwad');document.getElementById('finder')?.scrollIntoView({behavior:'smooth'})}} className="min-h-[52px] h-auto whitespace-normal break-words px-6 py-3 rounded-full font-extrabold text-lg leading-snug inline-flex items-center border-2 border-white/50 bg-white/10 active:scale-95 transition">Example: Karnataka, Dharwad</button>
       </div>
       <div className="flex flex-wrap gap-3">
        {[['8+','Schemes'],['6','Languages'],['₹0','Always Free']].map(x=><div key={x[1]} className="bg-white/10 border border-white/15 rounded-2xl px-5 py-3 text-center"><b className="block text-xl leading-tight">{x[0]}</b><span className="text-emerald-100 text-sm font-bold break-words">{x[1]}</span></div>)}
@@ -93,7 +109,7 @@ export default function App(){
    {ai&&<section className="bg-emerald-50 border-2 border-emerald-200 rounded-[2rem] p-6 sm:p-8" aria-live="polite"><div className="flex flex-wrap justify-between items-start gap-3"><h2 className="font-extrabold text-2xl leading-snug break-words">🤖 SahayaAI says {ai.for?`• ${ai.for}`:''}</h2><button onClick={()=>speak(ai.summary)} aria-label={t.listen} className="min-w-[52px] min-h-[52px] h-auto px-5 py-3 rounded-full bg-white border-2 grid place-items-center shrink-0"><Volume2/></button></div><p className="text-lg leading-relaxed break-words mt-3 whitespace-pre-line">{ai.summary}</p><p className="font-extrabold mt-4">Documents to carry:</p><div className="flex flex-wrap gap-2 mt-2">{ai.checklist?.map(d=><span key={d} className="bg-white border rounded-full px-3 py-2 font-semibold leading-snug break-words inline-flex gap-2 items-center"><CheckCircle2 size={18} className="text-emerald-700 shrink-0"/>{d}</span>)}</div><small className="text-stone-500 break-words">{ai.source}</small></section>}
 
    <section className="bg-white rounded-[2rem] border-2 border-stone-200/70 p-6 sm:p-8 shadow-sm">
-    <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-extrabold text-3xl leading-snug break-words">❤️ {t.saved} ({items.length})</h2><button disabled={busy} onClick={()=>askAI(null)} className="min-h-[52px] h-auto whitespace-normal break-words px-5 py-3 rounded-2xl text-white font-extrabold leading-snug disabled:opacity-60" style={{background:'#92400E'}}>🤖 {busy?'Thinking…':'Ask SahayaAI (Free, No Login)'}</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-extrabold text-3xl leading-snug break-words">❤️ {t.saved} ({items.length})</h2><button disabled={busy} onClick={()=>askAI(null)} className="min-h-[52px] h-auto whitespace-normal break-words px-5 py-3 rounded-2xl text-white font-extrabold leading-snug disabled:opacity-60" style={{background:'#92400E'}}>{busy?'Thinking…':'Ask SahayaAI Assistant'}</button></div>
     {items.length===0?<p className="text-lg leading-relaxed text-stone-600 mt-3">Nothing saved yet. Choose State → District above, then tap <b>Save</b> on any scheme. Saved schemes stay on this phone — no account needed.</p>
     :<ul className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">{items.map(it=><li key={it.id} className="rounded-3xl bg-[#FFFBEB] border-2 border-amber-200 p-6 flex flex-col gap-3"><b className="text-lg leading-snug break-words">{it.title}</b><p className="text-stone-600 leading-relaxed break-words">{it.ai_summary||it.description}</p><div className="flex flex-wrap gap-3 mt-auto"><button onClick={()=>speak(it.title+'. '+(it.ai_summary||''))} className="min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-full bg-white border-2 font-bold leading-snug inline-flex gap-2 items-center"><Volume2 size={18}/>{t.listen}</button><button onClick={()=>setItems(items.filter(x=>x.id!==it.id))} className="min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-full bg-white border-2 font-bold leading-snug text-red-700">🗑️ Remove</button></div></li>)}</ul>}
    </section>

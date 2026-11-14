@@ -34,6 +34,12 @@ export default function GuideModal({scheme,initialTab='guide',state,district,onC
    </div>
 
    <div className="p-6 sm:p-8 flex flex-col gap-5">
+    {/* Document Checklist Badge Bar */}
+    <div className="bg-white rounded-3xl border border-[#E2E8F0] p-5 flex flex-col gap-3">
+     <b className="leading-snug break-words inline-flex items-center gap-2"><FileText size={20} className="text-emerald-800 shrink-0"/> {t.stepDocsTitle||'Documents Required — Keep Ready'}</b>
+     <div className="flex flex-wrap gap-2">{(scheme.docs||[]).map(d=><span key={d} className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 px-3 py-2 text-sm font-bold leading-snug break-words"><ClipboardCheck size={15} className="text-emerald-600 shrink-0"/>{d}</span>)}</div>
+    </div>
+
     {/* Tabs */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="tablist" aria-label="Guide sections">
      <button role="tab" aria-selected={tab==='guide'} onClick={()=>setTab('guide')} className={`min-h-[52px] h-auto whitespace-normal break-words px-5 py-3 rounded-2xl font-extrabold text-lg leading-snug border-2 transition active:scale-[.98] ${tab==='guide'?'text-white shadow-lg':'bg-white text-emerald-900'}`} style={tab==='guide'?{background:'#064e3b',borderColor:'#064e3b'}:{borderColor:'#064e3b'}}>{t.tabGuide||'📋 What to do on the Official Website'}</button>
