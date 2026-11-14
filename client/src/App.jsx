@@ -1,6 +1,5 @@
 import {useEffect,useMemo,useState} from 'react'
-import {motion,MotionConfig,AnimatePresence} from 'framer-motion'
-import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House,Baby,Accessibility,Map as MapIcon} from 'lucide-react'
+import {Sprout,Volume2,Type,X,CheckCircle2,ShieldCheck,Landmark,LogOut,UserRound,Search,Menu,Moon,Share2,GitCompareArrows,BookmarkPlus,Bot,Home,Compass,ClipboardCheck,FolderUp,LayoutDashboard,Route,ShieldEllipsis,Info,HelpCircle,GraduationCap,HeartPulse,Hammer,HandCoins,Briefcase,HeartHandshake,House,Baby,Accessibility,Map as MapIcon,Mic,ChevronDown,LayoutGrid} from 'lucide-react'
 import SchemeFinder from './components/SchemeFinder.jsx'
 import VoiceAssist from './components/VoiceAssist.jsx'
 import TiltCard from './components/TiltCard.jsx'
@@ -32,7 +31,7 @@ export default function App(){
  const [token,setToken]=useState(localStorage.getItem('sahaya_token')||'')
  const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_user'))}catch{return null}})
  const [view,setView]=useState(()=>localStorage.getItem('sahaya_token')?'app':'login')
- const [page,setPage]=useState('home');const [menu,setMenu]=useState(false);const [dark,setDark]=useState(false)
+ const [page,setPage]=useState('home');const [menu,setMenu]=useState(false);const [dark,setDark]=useState(false);const [moreOpen,setMoreOpen]=useState(false);const [voiceSignal,setVoiceSignal]=useState(0)
  const [lang,setLang]=useState(localStorage.getItem('sahaya_lang')||'en');const t={...(T[lang]||T.en),...(GUIDE_T[lang]||GUIDE_T.en)}
  const [large,setLarge]=useState(false)
  const [state,setState]=useState('Karnataka');const [district,setDistrict]=useState('Dharwad');const [cat,setCat]=useState('all')
@@ -66,37 +65,53 @@ export default function App(){
  async function demoLogin(){try{const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'demo@example.com',password:'demo1234'})});const d=await r.json();if(!r.ok)throw new Error('demo');setToken(d.token);setUser(d.user);localStorage.setItem('sahaya_token',d.token);localStorage.setItem('sahaya_user',JSON.stringify(d.user));setView('app')}catch{guestLogin()}}
  function signOut(){setToken('');setUser(null);localStorage.removeItem('sahaya_token');localStorage.removeItem('sahaya_user');setView('login')}
  async function askAI(scheme){setSelected(null);setBusy(true);try{const r=await fetch(API+'/api/ai/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({occupation:profile.occupation,state:state,income:profile.income,language:LANGS[lang].name,name:user?.full_name||'Citizen'})});const d=await r.json();if(!r.ok)throw new Error('ai');setAi({...d,for:scheme?.name});speak(d.summary);activity('Asked SahayaAI assistant')}catch{setMsg('AI is waking up (~40s on free plan). Please try again.')}finally{setBusy(false)}}
- function onVoice(txt){const low=txt.toLowerCase();const found=Object.keys(STATE_DISTRICTS).find(s=>low.includes(s.toLowerCase().split(' ')[0]));if(found){setState(found);setDistrict('')}if(low.includes('pension'))setCat('pension');if(low.includes('farm'))setCat('farming');setPage('finder');setTimeout(()=>document.getElementById('finder')?.scrollIntoView({behavior:'smooth'}),80)}
- const go=p=>{setPage(p);setMenu(false);window.scrollTo({top:0,behavior:'smooth'})}
+ function onVoice(txt){const low=txt.toLowerCase();const found=Object.keys(STATE_DISTRICTS).find(s=>low.includes(s.toLowerCase().split(' ')[0]));if(found){setState(found);setDistrict('')}if(low.includes('pension'))setCat('pension');if(low.includes('farm'))setCat('farming');setPage('finder');setTimeout(()=>document.getElementById('finder')?.scrollIntoView(),80)}
+ const go=p=>{setPage(p);setMenu(false);setMoreOpen(false);window.scrollTo(0,0)}
+ const PRIMARY_NAV=[['home','Home',Home,'home'],['explore','Explore',Compass,'explore'],['schemes','Schemes',MapIcon,'states'],['voice','Voice Assistance',Mic,null],['progress','Progress',Route,'tracking']]
+ const MORE_NAV=[['finder','AI Scheme Finder',Sprout],['chat','AI Assistant',Bot],['eligibility','Eligibility Checker',ClipboardCheck],['documents','Documents',FolderUp],['dashboard','My Dashboard',LayoutDashboard],['about','About Us',Info],['admin','Admin',ShieldEllipsis]]
  const NAV=[['home','Home',Home],['explore','Explore Schemes',Compass],['states','All India States',MapIcon],['finder','AI Scheme Finder',Sprout],['chat','AI Assistant',Bot],['eligibility','Eligibility Checker',ClipboardCheck],['documents','Documents',FolderUp],['dashboard','My Dashboard',LayoutDashboard],['tracking','Track Application',Route],['about','About Us',Info]]
  const recommended=useMemo(()=>evaluateProfile(profile).slice(0,3),[profile])
  const eligibilitySaved=(()=>{try{return JSON.parse(localStorage.getItem('sahaya_eligibility')||'null')}catch{return null}})()
  const trackingList=(()=>{try{return JSON.parse(localStorage.getItem('sahaya_tracking')||'[]')}catch{return[]}})()
  const activities=(()=>{try{return JSON.parse(localStorage.getItem('sahaya_activity')||'[]')}catch{return[]}})()
 
- if(view==='login')return <MotionConfig reducedMotion="user"><LoginPage lang={lang} setLang={setLang} LANGS={LANGS} onEmailLogin={emailLogin} onGuest={guestLogin} onDemoLogin={demoLogin}/></MotionConfig>
+ if(view==='login')return <LoginPage lang={lang} setLang={setLang} LANGS={LANGS} onEmailLogin={emailLogin} onGuest={guestLogin} onDemoLogin={demoLogin}/>
 
- return <MotionConfig reducedMotion="user"><div className="min-h-screen bg-[#F8FAFC] text-slate-900 leading-relaxed" style={{fontSize:large?19:17}}>
-  {/* NAV */}
-  <header className="sticky top-0 z-40 bg-white/92 backdrop-blur-xl border-b border-[#E2E8F0] shadow-[0_1px_12px_rgba(15,23,42,.05)]">
-   <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-    <button onClick={()=>go('home')} className="flex items-center gap-2.5 min-h-[52px] text-left shrink-0"><span className="w-10 h-10 rounded-xl grid place-items-center text-white shadow shrink-0" style={{background:'linear-gradient(135deg,#0B2447,#064E3B)'}}><Landmark size={21}/></span><span className="leading-tight"><b className="text-[1.3rem] font-extrabold tracking-tight block">Sahaya<span style={{color:'#047857'}}>AI</span></b><small className="text-slate-400 font-bold text-[.68rem] tracking-wide hidden sm:block">GOVERNMENT SCHEME DISCOVERY</small></span></button>
-    <nav className="hidden xl:flex items-center gap-1" aria-label="Main">{NAV.slice(0,6).map(([id,label,Icon])=><button key={id} onClick={()=>go(id)} className={`min-h-[44px] px-3.5 py-2 rounded-full font-bold text-[.95rem] inline-flex gap-1.5 items-center transition ${page===id?'text-white shadow':'text-slate-500 hover:text-emerald-800 hover:bg-emerald-50'}`} style={page===id?{background:'#0B2447'}:{}}><Icon size={16}/>{label}</button>)}</nav>
-    <div className="flex items-center gap-2">
-     <select value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language" className="min-h-[44px] rounded-full font-bold px-3 text-white outline-none cursor-pointer text-sm hidden sm:block" style={{background:'#064E3B'}}>{NAV_LANGS.map(k=><option key={k} value={k} className="bg-white text-slate-900">{LANGS[k].label}</option>)}</select>
-     <button onClick={()=>setDark(!dark)} aria-label="Toggle dark mode" className="min-h-[44px] min-w-[44px] px-2.5 rounded-full border border-[#E2E8F0] bg-white grid place-items-center"><Moon size={18} className="text-slate-600"/></button>
-     <button onClick={()=>setLarge(!large)} aria-pressed={large} className="min-h-[44px] px-3 rounded-full border border-[#E2E8F0] bg-white font-extrabold text-slate-600 hidden sm:block">{large?'A':'A+'}</button>
-     {user&&<span className="hidden md:inline-flex items-center gap-2 rounded-full bg-slate-900 text-white pl-1.5 pr-3.5 py-1.5 max-w-[220px]"><span className="w-7 h-7 rounded-full grid place-items-center shrink-0" style={{background:'#D97706'}}><UserRound size={14}/></span><span className="leading-tight min-w-0"><b className="block text-[.8rem] truncate">{user.full_name}</b></span></span>}
-     <button onClick={signOut} className="min-h-[44px] px-3.5 rounded-full border-2 font-extrabold text-sm hidden sm:inline-flex gap-1.5 items-center bg-white" style={{borderColor:'#0B2447',color:'#0B2447'}}><LogOut size={15}/>Sign Out</button>
-     <button onClick={()=>setMenu(!menu)} aria-label="Open menu" aria-expanded={menu} className="min-h-[44px] min-w-[44px] px-2.5 rounded-full border border-[#E2E8F0] bg-white grid place-items-center xl:hidden"><Menu size={20}/></button>
+ return <div className="min-h-screen bg-[#F8FAFC] text-slate-900 leading-relaxed pt-[72px]" style={{fontSize:large?19:17}}>
+  {/* NAV — fixed glassmorphic header: 3-zone grid, pill nav, static 3D, no animations */}
+  <header className="glass-header">
+   <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-[72px] grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4">
+    {/* LEFT — brand */}
+    <button onClick={()=>go('home')} aria-label="Sahaya AI — Home" className="flex items-center gap-2.5 min-h-[52px] text-left shrink-0">
+     <span className="w-10 h-10 rounded-xl grid place-items-center text-white shrink-0 depth" style={{background:'linear-gradient(145deg,#0B2447,#064E3B)'}}><Landmark size={21}/></span>
+     <span className="leading-tight min-w-0"><b className="text-[1.25rem] font-extrabold tracking-tight block whitespace-nowrap">Sahaya <span style={{color:'#047857'}}>AI</span></b><small className="text-slate-400 font-bold text-[.66rem] tracking-wide hidden 2xl:block whitespace-nowrap">GOVERNMENT SCHEME DISCOVERY</small></span>
+    </button>
+    {/* CENTER — unified pill navigation */}
+    <nav className="hidden xl:flex justify-center min-w-0" aria-label="Main">
+     <div className="flex items-center gap-[10px] rounded-full bg-white/70 border border-white/60 p-1.5 depth-sm">
+      {PRIMARY_NAV.map(([key,label,Icon,target])=>{const active=!!target&&page===target;return <button key={key} onClick={()=>key==='voice'?setVoiceSignal(n=>n+1):go(target)} aria-current={active?'page':undefined} className={`nav-link min-h-[44px] px-3 py-2 rounded-full font-bold text-[.93rem] inline-flex gap-1.5 items-center ${active?'text-white depth-btn':'text-slate-600 hover:text-emerald-900 hover:bg-white'}`} style={active?{background:'linear-gradient(145deg,#0B2447,#064E3B)'}:{}}><Icon size={16} className="shrink-0"/>{label}</button>})}
+      <button onClick={()=>setMoreOpen(!moreOpen)} aria-expanded={moreOpen} className={`nav-link min-h-[44px] px-3 py-2 rounded-full font-bold text-[.93rem] inline-flex gap-1.5 items-center ${moreOpen?'text-white depth-btn':'text-slate-600 hover:text-emerald-900 hover:bg-white'}`} style={moreOpen?{background:'linear-gradient(145deg,#0B2447,#064E3B)'}:{}}><LayoutGrid size={16} className="shrink-0"/>More<ChevronDown size={15} className="shrink-0"/></button>
+     </div>
+    </nav>
+    {/* RIGHT — language / display / profile (never crowds the nav) */}
+    <div className="flex items-center gap-2 justify-self-end">
+     <select value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language" className="min-h-[44px] rounded-full font-bold px-2.5 text-white outline-none cursor-pointer text-sm hidden md:block max-w-[108px] depth-sm" style={{background:'linear-gradient(145deg,#064E3B,#047857)'}}>{NAV_LANGS.map(k=><option key={k} value={k} className="bg-white text-slate-900">{LANGS[k].label}</option>)}</select>
+     <button onClick={()=>setDark(!dark)} aria-label="Toggle dark mode" className="min-h-[44px] min-w-[44px] px-2.5 rounded-full border border-[#E2E8F0] bg-white grid place-items-center depth-sm"><Moon size={18} className="text-slate-600"/></button>
+     <button onClick={()=>setLarge(!large)} aria-pressed={large} className="min-h-[44px] px-3 rounded-full border border-[#E2E8F0] bg-white font-extrabold text-slate-600 hidden 2xl:block depth-sm">{large?'A':'A+'}</button>
+     {user&&<span className="hidden 2xl:inline-flex items-center gap-2 rounded-full bg-slate-900 text-white pl-1.5 pr-3.5 py-1.5 max-w-[200px] depth-sm"><span className="w-7 h-7 rounded-full grid place-items-center shrink-0" style={{background:'#D97706'}}><UserRound size={14}/></span><span className="leading-tight min-w-0"><b className="block text-[.8rem] truncate">{user.full_name}</b></span></span>}
+     <button onClick={signOut} className="min-h-[44px] px-3.5 rounded-full border-2 font-extrabold text-sm hidden md:inline-flex gap-1.5 items-center bg-white depth-sm" style={{borderColor:'#0B2447',color:'#0B2447'}}><LogOut size={15}/>Sign Out</button>
+     <button onClick={()=>setMenu(!menu)} aria-label="Open menu" aria-expanded={menu} className="min-h-[44px] min-w-[44px] px-2.5 rounded-full border border-[#E2E8F0] bg-white grid place-items-center xl:hidden depth-sm"><Menu size={20}/></button>
     </div>
    </div>
-   <AnimatePresence>{menu&&<motion.nav initial={{height:0,opacity:0}} animate={{height:'auto',opacity:1}} exit={{height:0,opacity:0}} className="xl:hidden overflow-hidden border-t border-[#E2E8F0] bg-white" aria-label="Mobile menu"><div className="px-4 py-3 grid grid-cols-2 gap-2">{[...NAV,['admin','Admin',ShieldEllipsis]].map(([id,label,Icon])=><button key={id} onClick={()=>go(id)} className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl font-bold inline-flex gap-2 items-center border ${page===id?'text-white':'bg-slate-50 text-slate-600'}`} style={page===id?{background:'#0B2447',borderColor:'#0B2447'}:{borderColor:'#E2E8F0'}}><Icon size={17}/>{label}</button>)}
-    <select value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language" className="min-h-[48px] rounded-2xl font-bold px-3 text-white col-span-2" style={{background:'#064E3B'}}>{Object.entries(LANGS).map(([k,v])=><option key={k} value={k} className="bg-white text-slate-900">{v.label}</option>)}</select>
-    <button onClick={signOut} className="min-h-[48px] rounded-2xl border-2 font-extrabold col-span-2" style={{borderColor:'#0B2447',color:'#0B2447'}}>Sign Out</button></div></motion.nav>}</AnimatePresence>
+   {/* MORE — remaining platform pages, in-flow panel (desktop) */}
+   {moreOpen&&<nav className="hidden xl:block border-t border-[#E2E8F0]/70 bg-white/90" aria-label="More pages"><div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-2">{MORE_NAV.map(([id,label,Icon])=><button key={id} onClick={()=>go(id)} aria-current={page===id?'page':undefined} className={`nav-link min-h-[44px] px-3 py-2 rounded-full font-bold text-[.93rem] inline-flex gap-1.5 items-center border ${page===id?'text-white depth-btn':'bg-white text-slate-600 hover:text-emerald-900'}`} style={page===id?{background:'linear-gradient(145deg,#0B2447,#064E3B)',borderColor:'transparent'}:{borderColor:'#E2E8F0'}}><Icon size={16} className="shrink-0"/>{label}</button>)}</div></nav>}
+   {/* Mobile / tablet drawer — structured grid, header stays pinned */}
+   {menu&&<nav className="xl:hidden border-t border-[#E2E8F0]/70 bg-white/95 max-h-[calc(100vh-72px)] overflow-y-auto" aria-label="Mobile menu"><div className="px-4 py-3 grid grid-cols-2 gap-2">{[...NAV,['admin','Admin',ShieldEllipsis]].map(([id,label,Icon])=><button key={id} onClick={()=>go(id)} aria-current={page===id?'page':undefined} className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl font-bold inline-flex gap-2 items-center border ${page===id?'text-white depth-btn':'bg-slate-50 text-slate-600'}`} style={page===id?{background:'linear-gradient(145deg,#0B2447,#064E3B)',borderColor:'#0B2447'}:{borderColor:'#E2E8F0'}}><Icon size={17} className="shrink-0"/><span className="text-left leading-snug break-words">{label}</span></button>)}
+    <select value={lang} onChange={e=>setLang(e.target.value)} aria-label="Language" className="min-h-[48px] rounded-2xl font-bold px-3 text-white col-span-2 depth-sm" style={{background:'linear-gradient(145deg,#064E3B,#047857)'}}>{Object.entries(LANGS).map(([k,v])=><option key={k} value={k} className="bg-white text-slate-900">{v.label}</option>)}</select>
+    <button onClick={signOut} className="min-h-[48px] rounded-2xl border-2 font-extrabold col-span-2 depth-sm bg-white" style={{borderColor:'#0B2447',color:'#0B2447'}}>Sign Out</button></div></nav>}
   </header>
 
-  <AnimatePresence mode="wait"><motion.main key={page} initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:.3}} className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 pb-28">
+  <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-8 pb-28">
    {msg&&<p role="status" className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 font-semibold leading-relaxed break-words">{msg}<button onClick={()=>setMsg('')} className="float-right font-extrabold px-2" aria-label="Dismiss">✕</button></p>}
 
    {page==='home'&&<>
@@ -111,8 +126,8 @@ export default function App(){
        <button className="min-h-[52px] px-6 py-3 rounded-xl text-white font-extrabold shadow inline-flex items-center gap-2" style={{background:'#047857'}}>Search</button>
       </form>
       <div className="flex flex-wrap gap-3">
-       <button onClick={()=>go('finder')} className="min-h-[52px] h-auto whitespace-normal px-6 py-3 rounded-full font-extrabold text-lg leading-snug shadow-xl active:scale-95 transition" style={{background:'#D97706',color:'#fff'}}>Find My Schemes</button>
-       <button onClick={()=>go('explore')} className="min-h-[52px] h-auto whitespace-normal px-6 py-3 rounded-full font-extrabold text-lg leading-snug bg-white/10 border border-white/35 active:scale-95 transition">Explore All Schemes</button>
+       <button onClick={()=>go('finder')} className="min-h-[52px] h-auto whitespace-normal px-6 py-3 rounded-full font-extrabold text-lg leading-snug depth-btn" style={{background:'#D97706',color:'#fff'}}>Find My Schemes</button>
+       <button onClick={()=>go('explore')} className="min-h-[52px] h-auto whitespace-normal px-6 py-3 rounded-full font-extrabold text-lg leading-snug bg-white/10 border border-white/35">Explore All Schemes</button>
       </div>
       <div className="grid grid-cols-3 gap-3 max-w-md">{[[catalog.length,'Schemes in directory'],[Object.keys(STATE_DISTRICTS).length,'States covered'],['4','Languages']].map(x=><div key={x[1]} className="bg-white/[.08] border border-white/15 rounded-2xl p-3.5 text-center"><b className="block text-2xl leading-tight">{x[0]}</b><span className="text-slate-300 text-xs font-bold break-words block">{x[1]}</span></div>)}</div>
       <p className="text-xs text-slate-400 font-semibold">Directory statistics above are counted live from the SahayaAI scheme directory on this website — not national beneficiary figures.</p>
@@ -125,7 +140,7 @@ export default function App(){
 
     {/* CATEGORIES */}
     <section><p className="font-extrabold tracking-widest text-sm" style={{color:'#047857'}}>BROWSE BY CATEGORY</p><h2 className="font-extrabold text-3xl tracking-tight mt-1">What support does your family need?</h2>
-     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 mt-5">{CAT10.map(([c,Icon])=>{const n=catalog.filter(s=>s.tags.includes(c)).length;return <TiltCard key={c} onClick={()=>{setExCat(c);go('explore')}} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-shadow p-5 text-left cursor-pointer w-full"><span className="w-11 h-11 rounded-2xl bg-emerald-50 grid place-items-center"><Icon size={22} className="text-emerald-700"/></span><b className="block mt-2.5 leading-snug break-words">{c}</b><span className="text-sm text-slate-400 font-semibold">{n} schemes</span></TiltCard>})}</div></section>
+     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 mt-5">{CAT10.map(([c,Icon])=>{const n=catalog.filter(s=>s.tags.includes(c)).length;return <TiltCard key={c} onClick={()=>{setExCat(c);go('explore')}} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm hover:shadow-xl p-5 text-left cursor-pointer w-full"><span className="w-11 h-11 rounded-2xl bg-emerald-50 grid place-items-center"><Icon size={22} className="text-emerald-700"/></span><b className="block mt-2.5 leading-snug break-words">{c}</b><span className="text-sm text-slate-400 font-semibold">{n} schemes</span></TiltCard>})}</div></section>
 
     {/* HOW + WHY */}
     <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -198,7 +213,7 @@ export default function App(){
     <div id="help" className="bg-white rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8"><h3 className="font-extrabold text-2xl inline-flex gap-2 items-center"><HelpCircle className="text-emerald-700"/> Help & Support</h3>
      <ul className="mt-3 flex flex-col gap-2.5 text-slate-600 leading-relaxed"><li>• <b>Applying:</b> Use the Step-by-Step Guide on any scheme, then apply FREE at your nearest Grama One / CSC / Seva Sindhu centre.</li><li>• <b>Documents:</b> Open the Documents page for a personalised checklist. Your files never leave your phone.</li><li>• <b>Scheme doubts:</b> Ask the AI Assistant (nav above) in Kannada, Telugu, Hindi or English.</li><li>• <b>Official help:</b> For application status, only the official portal / department helpline on that portal can confirm.</li></ul></div>
    </section>}
-  </motion.main></AnimatePresence>
+  </main>
 
   <footer className="text-white" style={{background:'#0B2447'}}>
    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -208,21 +223,21 @@ export default function App(){
    <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8 text-slate-400 text-sm border-t border-white/10 pt-5 leading-relaxed">Disclaimer: SahayaAI simplifies public government information and is not an official government website. Eligibility shown is guidance only — final approval rests solely with the Government department. Always verify on official .gov.in / .nic.in portals. Never pay anyone for free schemes. • Made in India 🇮🇳</div>
   </footer>
 
-  <AnimatePresence>{selected&&<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 z-50 bg-black/55 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={t.checkTitle}>
-   <motion.div initial={{y:60}} animate={{y:0}} exit={{y:60}} className="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col gap-4">
+  {selected&&<div className="fixed inset-0 z-[1200] bg-black/55 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={t.checkTitle}>
+   <div className="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col gap-4">
     <div className="flex flex-wrap items-start justify-between gap-3"><span className="rounded-full px-4 py-2 font-extrabold text-white leading-snug" style={{background:'#047857'}}>{selected.match}% Match</span><button onClick={()=>setSelected(null)} aria-label="Close" className="min-w-[52px] min-h-[52px] px-3 py-3 grid place-items-center rounded-full bg-slate-100 shrink-0"><X size={24}/></button></div>
     <h3 className="font-extrabold text-3xl leading-snug break-words">{selected.name}</h3><p className="font-extrabold text-xl leading-relaxed break-words" style={{color:'#D97706'}}>{selected.benefit}</p>
     <div><h4 className="font-extrabold text-xl">You may be eligible if:</h4><ul className="flex flex-col gap-2 mt-2 text-lg leading-relaxed">{selected.points.map(p=><li key={p} className="flex gap-2 break-words"><CheckCircle2 className="text-emerald-700 shrink-0 mt-1"/>{p}</li>)}</ul></div>
     <div><h4 className="font-extrabold text-xl">Documents:</h4><div className="flex flex-wrap gap-2 mt-2">{selected.docs.map(d=><span key={d} className="bg-amber-50 border border-amber-200 rounded-full px-3 py-2 font-semibold leading-snug break-words">{d}</span>)}</div></div>
     <div className="flex flex-wrap gap-3"><button onClick={()=>askAI(selected)} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl text-white font-extrabold leading-snug" style={{background:'#0B2447'}}>Ask AI</button><button onClick={()=>{setGuide({scheme:selected,tab:'link'});setSelected(null)}} className="flex-1 min-w-[150px] min-h-[52px] h-auto whitespace-normal px-5 py-3 rounded-2xl font-extrabold leading-snug border-2 inline-flex justify-center items-center" style={{borderColor:'#D97706',color:'#92400E'}}>{t.apply}</button></div>
     <button onClick={()=>listenScheme(selected)} className="min-h-[52px] h-auto whitespace-normal px-5 py-3 w-full rounded-2xl bg-amber-100 font-extrabold leading-snug inline-flex justify-center items-center gap-2"><Volume2/> {t.listen}</button>
-   </motion.div></motion.div>}</AnimatePresence>
-  <AnimatePresence>{guide&&<GuideModal key={guide.scheme.name+'-'+guide.tab} scheme={guide.scheme} initialTab={guide.tab} state={state} district={district} onClose={()=>setGuide(null)} t={t} langSpeech={LANGS[lang].speech}/>}</AnimatePresence>
-  <VoiceAssist langSpeech={LANGS[lang].speech} onTranscript={onVoice} t={t}/>
- </div></MotionConfig>
+   </div></div>}
+  {guide&&<GuideModal key={guide.scheme.name+'-'+guide.tab} scheme={guide.scheme} initialTab={guide.tab} state={state} district={district} onClose={()=>setGuide(null)} t={t} langSpeech={LANGS[lang].speech}/>}
+  <VoiceAssist langSpeech={LANGS[lang].speech} onTranscript={onVoice} t={t} openSignal={voiceSignal}/>
+ </div>
 }
 function MiniCard({s,onGuide,onSave,onListen,onShare,onCompare,compared}){
- return <motion.article initial={{opacity:0,y:14}} whileInView={{opacity:1,y:0}} viewport={{once:true}} whileHover={{y:-5}} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm hover:shadow-xl transition-shadow p-6 flex flex-col gap-3">
+ return <article className="depth-card p-6 flex flex-col gap-3">
   <div className="flex flex-wrap justify-between gap-2"><span className="rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1.5 text-[.8rem] font-bold break-words">{s.origin}</span><span className="rounded-full px-3 py-1.5 text-sm font-extrabold text-white shrink-0" style={{background:(s.match||80)>=90?'#047857':'#D97706'}}>{s.match||'—'}% Match</span></div>
   <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold text-sm"><ShieldCheck size={15}/>Verified Official Scheme</span>
   <h3 className="font-extrabold text-[1.3rem] leading-snug break-words">{s.name}</h3>
@@ -238,5 +253,5 @@ function MiniCard({s,onGuide,onSave,onListen,onShare,onCompare,compared}){
    {onShare&&<button onClick={onShare} className="min-h-[44px] px-3.5 rounded-full bg-slate-50 border font-bold text-sm inline-flex gap-1.5 items-center"><Share2 size={15}/>Share</button>}
    {onCompare&&<button onClick={onCompare} aria-pressed={!!compared} className={`min-h-[44px] px-3.5 rounded-full border font-bold text-sm inline-flex gap-1.5 items-center ${compared?'bg-slate-900 text-white':'bg-slate-50'}`}><GitCompareArrows size={15}/>{compared?'Comparing ✓':'Compare'}</button>}
   </div>
- </motion.article>
+ </article>
 }
