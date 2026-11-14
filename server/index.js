@@ -118,4 +118,38 @@ app.post('/api/ai/generate',optionalAuth,async(req,res)=>{
 });
 
 (async()=>{ if(supabase){ try{ const {data}=await supabase.from('profiles').select('id').eq('email','demo@example.com').maybeSingle(); if(!data){ const hash=await bcrypt.hash('demo1234',10); await supabase.from('profiles').insert({email:'demo@example.com',full_name:'Demo Farmer',password_hash:hash}); console.log('🌱 Demo user seeded in Supabase'); } }catch(e){console.log('demo seed',e.message)} } })();
+// ---- AI Chat (ChatGPT-style assistant; Gemini when configured, honest local fallback otherwise) ----
+async function geminiText(prompt, maxTokens=500){
+ const key=process.env.GEMINI_API_KEY; if(!key) return null;
+ const models=[process.env.GEMINI_MODEL||'gemini-3.8-flash', process.env.GEMINI_FALLBACK_MODEL||'gemini-3.1-flash-lite'];
+ for(const model of models){
+  try{ const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),30000);
+   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:maxTokens,thinkingConfig:{thinkingBudget:0}}})});
+   clearTimeout(to); const data=await r.json(); const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text).filter(Boolean).join(' ')||''; if(text) return {text,model};
+  }catch(e){ continue; }
+ }
+ return null;
+}
+app.post('/api/ai/chat',optionalAuth,async(req,res)=>{
+ const {message,language,state,occupation}=req.body||{};
+ if(!message||String(message).trim().length<2) return res.status(400).json({error:'Please type or speak a question'});
+ const lower=String(message).toLowerCase();
+ const matched=SCHEMES.filter(s=>lower.includes(s.title.toLowerCase().split(' ')[0].toLowerCase())||s.occupations.some(o=>lower.includes(o.toLowerCase()))||(s.cat&&lower.includes(s.cat))).slice(0,3);
+ const recs=(matched.length?matched:SCHEMES.filter(s=>!occupation||s.occupations.includes(occupation)).slice(0,3));
+ const localReply=`I can help with government schemes in simple ${language||'English'}. Based on your question, look at: ${recs.map(s=>`${s.title} (${s.benefit})`).join('; ')}. Carry Aadhaar, bank passbook and relevant land/income papers to Grama One/CSC. Registration for government schemes is free — please confirm final eligibility on the official portal, as I cannot give official approval.`;
+ const prompt=`You are SahayaAI, a friendly Indian government-scheme assistant. Reply in simple ${language||'English'}, max 130 words, easy words for farmers and senior citizens. Question: "${message}". Relevant verified schemes from our directory: ${recs.map(s=>`${s.title} - ${s.benefit} - docs: ${s.docs.join(', ')}`).join(' | ')}. Explain benefits, who may qualify, documents and next step. End by saying final approval is only by the government.`;
+ const g=await geminiText(prompt,450);
+ res.json({reply:g?g.text:localReply,source:g?`Gemini ${g.model}`:'Local assistant (Gemini unavailable)',schemes:recs.map(s=>({title:s.title,benefit:s.benefit}))});
+});
+
+// ---- Admin stats (secure: JWT + ADMIN_EMAILS allowlist on server) ----
+app.get('/api/admin/stats',auth,async(req,res)=>{
+ const allow=(process.env.ADMIN_EMAILS||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+ if(!allow.includes((req.user.email||'').toLowerCase())) return res.status(403).json({error:'Admin access only. Ask the portal owner to add your email to ADMIN_EMAILS on the server.'});
+ let users=null, items=null;
+ if(supabase){ const u=await supabase.from('profiles').select('id',{count:'exact',head:true}); users=u.count; const i=await supabase.from('items').select('id',{count:'exact',head:true}); items=i.count; }
+ else { users=memUsers.size; items=memItems.size; }
+ res.json({totalUsers:users,totalSavedItems:items,totalSchemes:SCHEMES.length,statesCovered:6,languages:6,aiConfigured:!!process.env.GEMINI_API_KEY,supabase:hasSupabase,generatedAt:new Date().toISOString()});
+});
+
 app.listen(PORT,'0.0.0.0',()=>console.log(`🚀 SahayaAI server on ${PORT} | Supabase:${hasSupabase} Gemini:${!!process.env.GEMINI_API_KEY}`));

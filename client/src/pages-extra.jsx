@@ -1,0 +1,55 @@
+import {useEffect,useState} from 'react'
+import {ShieldCheck,BarChart3,Users,LayoutGrid,Bot,FileWarning,Trash2,PlusCircle} from 'lucide-react'
+const API=import.meta.env.VITE_API_BASE_URL||'https://sahayaai-backend.onrender.com'
+export function TrackingPage({schemes}){
+ const [list,setList]=useState(()=>{try{return JSON.parse(localStorage.getItem('sahaya_tracking')||'[]')}catch{return[]}})
+ const [f,setF]=useState({scheme:'PM-KISAN Samman Nidhi',ref:'',date:new Date().toISOString().slice(0,10),status:'Submitted',pending:''})
+ useEffect(()=>{localStorage.setItem('sahaya_tracking',JSON.stringify(list))},[list])
+ const STEPS=['Submitted','Documents Pending','Under Review','Approved']
+ function add(e){e.preventDefault(); if(!f.ref.trim())return alert('Please type the Application Reference Number exactly as on your official receipt. We never create one for you.'); setList([{...f,id:Date.now()},...list]); setF({...f,ref:'',pending:''}); log('Added application tracking (your update)')}
+ function log(msg){try{const a=JSON.parse(localStorage.getItem('sahaya_activity')||'[]');a.unshift({msg,at:new Date().toLocaleString()});localStorage.setItem('sahaya_activity',JSON.stringify(a.slice(0,12)))}catch{}}
+ return <section className="flex flex-col gap-6">
+  <div className="bg-white dark-card rounded-[1.75rem] border border-[#E2E8F0] shadow-sm p-6 sm:p-8">
+   <h2 className="font-extrabold text-3xl tracking-tight">Application Tracking</h2>
+   <p className="text-slate-500 leading-relaxed mt-1 flex gap-2"><FileWarning className="text-amber-600 shrink-0 mt-0.5"/> <span><b>Honest tracking:</b> SahayaAI has no official government status integration. This tracker shows <b>only updates you enter yourself</b> from official receipts/portals. We never invent a status or reference number.</span></p>
+   <form onSubmit={add} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mt-5">
+    <label className="flex flex-col gap-1 font-bold text-sm">Scheme<select value={f.scheme} onChange={e=>setF({...f,scheme:e.target.value})} className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3 bg-white">{schemes.map(s=><option key={s.name}>{s.name}</option>)}</select></label>
+    <label className="flex flex-col gap-1 font-bold text-sm">Reference Number (from receipt) *<input required value={f.ref} onChange={e=>setF({...f,ref:e.target.value})} placeholder="e.g. as printed officially" className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3"/></label>
+    <label className="flex flex-col gap-1 font-bold text-sm">Submission Date<input type="date" value={f.date} onChange={e=>setF({...f,date:e.target.value})} className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3"/></label>
+    <label className="flex flex-col gap-1 font-bold text-sm">Status (you saw officially)<select value={f.status} onChange={e=>setF({...f,status:e.target.value})} className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3 bg-white">{[...STEPS,'Rejected'].map(s=><option key={s}>{s}</option>)}</select></label>
+    <label className="flex flex-col gap-1 font-bold text-sm">Pending Documents<input value={f.pending} onChange={e=>setF({...f,pending:e.target.value})} placeholder="None / Land RTC…" className="min-h-[52px] rounded-xl border border-[#E2E8F0] px-3"/></label>
+    <button className="min-h-[52px] px-5 rounded-xl text-white font-extrabold inline-flex gap-2 items-center justify-center lg:col-span-5" style={{background:'#064E3B'}}><PlusCircle size={19}/> Add My Application</button>
+   </form>
+  </div>
+  {list.length===0?<div className="bg-white rounded-3xl border border-dashed border-slate-300 p-10 text-center text-slate-500 font-semibold">No applications added yet. After applying on an official portal, add your receipt details here to track them yourself.</div>
+  :<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">{list.map(a=>{const idx=STEPS.indexOf(a.status);return <article key={a.id} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6 flex flex-col gap-3">
+   <div className="flex flex-wrap justify-between gap-2"><b className="text-xl leading-snug break-words flex-1">{a.scheme}</b><span className="rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 px-3 py-1.5 font-extrabold text-sm shrink-0 h-fit">{a.status}</span></div>
+   <p className="text-slate-600 leading-relaxed break-words"><b>Ref:</b> {a.ref} • <b>Submitted:</b> {a.date}<br/><b>Pending documents:</b> {a.pending||'None reported by you'}</p>
+   <ol className="flex flex-col gap-2.5 mt-1">{STEPS.map((s,i)=><li key={s} className="flex items-center gap-3"><span className={`w-8 h-8 rounded-full grid place-items-center font-extrabold text-sm shrink-0 ${i<=idx?'text-white':'bg-slate-100 text-slate-400'}`} style={i<=idx?{background:'#047857'}:{}}>{i<=idx?'✓':i+1}</span><span className={`font-semibold ${i<=idx?'text-slate-800':'text-slate-400'}`}>{s}</span>{i<STEPS.length-1&&''}</li>)}</ol>
+   {a.status==='Rejected'&&<p className="text-red-700 font-bold bg-red-50 border border-red-200 rounded-2xl p-3">Status marked Rejected by you. Please check the official portal for the reason and re-apply if allowed.</p>}
+   <button onClick={()=>setList(list.filter(x=>x.id!==a.id))} className="min-h-[44px] px-4 rounded-full bg-white border font-bold text-red-700 inline-flex gap-1.5 items-center w-fit"><Trash2 size={16}/>Remove</button>
+  </article>})}</div>}
+ </section>
+}
+export function AdminPage({token,catalog}){
+ const [stats,setStats]=useState(null);const [err,setErr]=useState('');const [q,setQ]=useState('')
+ useEffect(()=>{ if(!token){setErr('Please sign in with an administrator account.');return}
+  fetch(API+'/api/admin/stats',{headers:{Authorization:'Bearer '+token}}).then(async r=>{const d=await r.json(); if(!r.ok)throw new Error(d.error||'Denied'); setStats(d)}).catch(e=>setErr(e.message)) },[token])
+ const cats={}; catalog.forEach(s=>cats[s.cat||'general']=(cats[s.cat||'general']||0)+1)
+ return <section className="flex flex-col gap-6">
+  <div className="rounded-[1.75rem] p-6 sm:p-8 text-white" style={{background:'linear-gradient(135deg,#0B2447,#064E3B)'}}><h2 className="font-extrabold text-3xl tracking-tight inline-flex gap-2 items-center flex-wrap"><ShieldCheck/> Admin Dashboard</h2><p className="text-emerald-100/85 leading-relaxed mt-1">Secure area — protected by login + server-side ADMIN_EMAILS allowlist. User emails are never listed here for privacy.</p></div>
+  {err&&<p role="alert" className="bg-amber-50 border border-amber-300 text-amber-900 rounded-3xl p-5 font-semibold leading-relaxed">🔒 {err}<br/><span className="text-sm">Portal owner: add the admin email to the <code>ADMIN_EMAILS</code> environment variable on the backend server (Render), then sign in again. No admin access is granted from the browser alone.</span></p>}
+  {stats&&<>
+   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{[[Users,'Total Registered Users',stats.totalUsers],[LayoutGrid,'Schemes in Directory',stats.totalSchemes],[FileWarning,'Saved Items (all users)',stats.totalSavedItems],[Bot,'AI Assistant',stats.aiConfigured?'Gemini Connected':'Local Fallback']].map(([Icon,l,v])=><div key={l} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-5"><Icon className="text-emerald-700" size={26}/><b className="block text-3xl font-extrabold mt-2 break-words">{v}</b><span className="text-slate-500 font-semibold text-sm leading-snug block">{l}</span></div>)}</div>
+   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6"><h3 className="font-extrabold text-xl inline-flex gap-2 items-center"><BarChart3 size={20}/> Analytics & Reports</h3><ul className="mt-3 flex flex-col gap-2 text-slate-600 leading-relaxed"><li>• Database: {stats.supabase?'Supabase Postgres (live)':'Demo memory mode'}</li><li>• Coverage in directory: {stats.statesCovered} states • {stats.languages} languages</li><li>• Report generated: {new Date(stats.generatedAt).toLocaleString()}</li><li>• Export: use Supabase dashboard for full CSV exports (admin only).</li></ul></div>
+    <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6"><h3 className="font-extrabold text-xl">Category Management</h3><div className="flex flex-wrap gap-2 mt-3">{Object.entries(cats).map(([c,n])=><span key={c} className="rounded-full bg-slate-50 border px-3.5 py-2 font-bold text-sm">{c}: {n} schemes</span>)}</div><p className="text-sm text-slate-500 mt-3 leading-relaxed">Categories are managed in the version-controlled scheme directory (<code>client/src/data/schemes.js</code>) so every change is reviewed before publishing.</p></div>
+   </div>
+   <div className="bg-white rounded-3xl border border-[#E2E8F0] shadow-sm p-6"><h3 className="font-extrabold text-xl">Scheme Management & Verification</h3>
+    <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search schemes to verify…" className="min-h-[52px] w-full rounded-xl border border-[#E2E8F0] px-4 mt-3 outline-none focus:border-emerald-600"/>
+    <div className="overflow-x-auto mt-3"><table className="w-full text-left min-w-[560px]"><thead><tr className="text-slate-400 text-sm border-b"><th className="py-2 pr-3">Scheme</th><th className="pr-3">Origin</th><th className="pr-3">Official Portal</th><th>Verification</th></tr></thead>
+    <tbody>{catalog.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())).slice(0,12).map(s=><tr key={s.name} className="border-b last:border-0"><td className="py-2.5 pr-3 font-semibold break-words">{s.name}</td><td className="pr-3">{s.origin}</td><td className="pr-3"><a className="text-emerald-800 font-bold break-all" href={s.apply} target="_blank" rel="noreferrer">{s.apply}</a></td><td><span className="rounded-full bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-1 text-xs font-bold whitespace-normal">Verify on official portal before publishing updates</span></td></tr>)}</tbody></table></div>
+    <p className="text-sm text-slate-500 mt-3 leading-relaxed">User Management & Content Management are handled through the secure Supabase console by the portal owner; AI monitoring (model, usage, errors) through Google AI Studio / Render logs. This separation keeps citizen data out of the public web app.</p>
+   </div></>}
+ </section>
+}

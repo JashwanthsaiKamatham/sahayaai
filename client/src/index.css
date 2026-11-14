@@ -25,3 +25,11 @@ button,a,select,input{min-height:48px} select,input,textarea{font-size:1rem}
 @media (prefers-reduced-motion: reduce){.animate-ping{animation:none!important}}
 
 h1,h2,h3,.font-display{font-family:'Plus Jakarta Sans',Inter,'Noto Sans',sans-serif;letter-spacing:-.03em}
+/* Dark mode (class strategy, overrides light surfaces) */
+.dark body{background:#0B1220!important;color:#E2E8F0!important}
+.dark .bg-white,.dark .bg-white\/85,.dark .bg-white\/90,.dark .bg-white\/92{background-color:#111C2E!important;color:#E2E8F0!important}
+.dark .bg-slate-50,.dark .bg-amber-50\/70,.dark .bg-amber-50,.dark .bg-emerald-50{background-color:#16233A!important;color:#E2E8F0!important}
+.dark .text-slate-900,.dark .text-slate-700,.dark .text-slate-600,.dark .text-slate-500{color:#CBD5E1!important}
+.dark .text-slate-400{color:#94A3B8!important}
+.dark input,.dark select,.dark textarea{background-color:#0F1A2C!important;color:#E2E8F0!important;border-color:#263449!important}
+.dark header{background:rgba(11,18,32,.92)!important}
